@@ -9,18 +9,20 @@ import androidx.room.PrimaryKey;
 
 import java.io.File;
 
-//@Entity(indices={@Index(value={"title"})})
 @Entity
 public class PhotoData {
     @PrimaryKey(autoGenerate = true) private int id=0;
-    private String file;
+    private String photoFile;
+    private String thumbFile;
 
     @Ignore
     public Bitmap picture;
 
-    public PhotoData(String file) {
-        this.file = file;
+    public PhotoData(String photoFile, String thumbFile) {
+        this.photoFile = photoFile;
+        this.thumbFile = thumbFile;
     }
+
 
     public int getId() {
         return id;
@@ -29,11 +31,18 @@ public class PhotoData {
         this.id = id;
     }
 
-    public String getFile() {
-        return file;
+    public String getPhotoFile() {
+        return photoFile;
     }
-    public void setFile(String file) {
-        this.file = file;
+    public void setPhotoFile(String file) {
+        this.photoFile = file;
+    }
+
+    public String getThumbFile() {
+        return thumbFile;
+    }
+    public void setThumbFile(String file) {
+        this.thumbFile = file;
     }
 
     public Bitmap getPicture() {

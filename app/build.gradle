@@ -54,6 +54,7 @@ dependencies {
     })
     androidTestImplementation "androidx.test.ext:junit:$rootProject.androidxJunitVersion"
 
+
     implementation 'com.github.jkwiecien:EasyImage:2.0.3'
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
