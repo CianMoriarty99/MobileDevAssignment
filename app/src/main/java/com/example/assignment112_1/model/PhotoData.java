@@ -1,6 +1,7 @@
 package com.example.assignment112_1.model;
 
 import android.graphics.Bitmap;
+import android.icu.text.CaseMap;
 
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -14,6 +15,9 @@ public class PhotoData {
     @PrimaryKey(autoGenerate = true) private int id=0;
     private String photoFile;
     private String thumbFile;
+   // private String description;
+   // private String title;
+   // private String location;
 
     @Ignore
     public Bitmap picture;
