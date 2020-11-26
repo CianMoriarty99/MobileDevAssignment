@@ -2,8 +2,11 @@ package com.example.assignment112_1;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.ImageView;
+
+import com.example.assignment112_1.model.PhotoData;
 
 public class FullView extends AppCompatActivity {
 
@@ -15,8 +18,8 @@ public class FullView extends AppCompatActivity {
 
         ImageView imageView = findViewById(R.id.img_full);
 
-        int img_id = getIntent().getExtras().getInt("img_id");
-        imageView.setImageResource(img_id);
+        PhotoData img = getIntent().getExtras().getParcelable("img");
+        imageView.setImageBitmap(BitmapFactory.decodeFile(img.getPhotoFile()));
 
 
     }

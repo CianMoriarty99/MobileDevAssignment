@@ -15,8 +15,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 
@@ -32,33 +36,19 @@ import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
 
 import android.app.Dialog;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MyAdapter.ImageListener {
 
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 2987;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 7829;
-
     private Activity activity;
     private PhotoViewModel model;
     private List<PhotoData> myPictureList;
     private  MyAdapter mAdapter;
 
-
-    ArrayList<Integer> mImageIds = new ArrayList < >(Arrays.asList(
-            R.drawable.img1,R.drawable.img2,R.drawable.img3,R.drawable.img4,
-            R.drawable.img5,R.drawable.img6,R.drawable.img7
-            ));
 
 
     @Override
@@ -75,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
         // set up the RecyclerView
         myPictureList = new ArrayList<>();
-        mAdapter = new MyAdapter(myPictureList);
+        mAdapter = new MyAdapter(myPictureList, this);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
 
@@ -100,18 +90,56 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 EasyImage.openCamera(getActivity(), 0);
-
-        GridView gridView = findViewById(R.id.myGrid);
-        gridView.setAdapter(new ImageAdaptor(mImageIds,this));
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int item_pos = mImageIds.get(position);
-
-                ShowDialogBox(item_pos);
             }
         });
     }
+
+    @Override
+    public void onImageClick(int position) {
+        PhotoData item = myPictureList.get(position);
+        ShowDialogBox(item);
+    }
+
+    public void ShowDialogBox(final PhotoData item){
+        final Dialog dialog = new Dialog(this);
+
+        dialog.setContentView(R.layout.custom_dialog);
+
+        //Getting custom dialog views
+        TextView Image_name = dialog.findViewById(R.id.txt_Image_name);
+        ImageView Image = dialog.findViewById(R.id.img);
+        Button btn_Full = dialog.findViewById(R.id.btn_full);
+        Button btn_Close = dialog.findViewById(R.id.btn_close);
+
+        String title = "TODO get title";
+
+        //extracting name
+        int index = title.indexOf("/");
+        String name = title.substring(index+1,title.length());
+        Image_name.setText(name);
+
+        //TODO use async task?
+        Image.setImageBitmap(BitmapFactory.decodeFile(item.getThumbFile()));
+
+        btn_Close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        btn_Full.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, FullView.class);
+                i.putExtra("img", item);
+                startActivity(i);
+            }
+        });
+
+        dialog.show();
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -213,44 +241,28 @@ public class MainActivity extends AppCompatActivity {
     public Activity getActivity() {
         return activity;
     }
-          
-    public void ShowDialogBox(final int item_pos){
-        final Dialog dialog = new Dialog(this);
 
-        dialog.setContentView(R.layout.custom_dialog);
+    //TODO move into service
+    private static class UploadSingleImageTask extends AsyncTask<FileAndView, Void, Bitmap> {
+        FileAndView fileAndView;
 
-        //Getting custom dialog views
-        TextView Image_name = dialog.findViewById(R.id.txt_Image_name);
-        ImageView Image = dialog.findViewById(R.id.img);
-        Button btn_Full = dialog.findViewById(R.id.btn_full);
-        Button btn_Close = dialog.findViewById(R.id.btn_close);
-
-        String title = getResources().getResourceName(item_pos);
-
-        //extracting name
-        int index = title.indexOf("/");
-        String name = title.substring(index+1,title.length());
-        Image_name.setText(name);
-
-        Image.setImageResource(item_pos);
-
-        btn_Close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        btn_Full.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, FullView.class);
-                i.putExtra("img_id", item_pos);
-                startActivity(i);
-            }
-        });
-
-        dialog.show();
-
+        @Override
+        protected Bitmap doInBackground(FileAndView... fileAndViews) {
+            fileAndView= fileAndViews[0];
+            return BitmapFactory.decodeFile(fileAndView.file.getAbsolutePath());
+        }
+        @Override
+        protected void onPostExecute (Bitmap bitmap){
+            fileAndView.image.setImageBitmap(bitmap);
+        }
     }
+    private class FileAndView {
+        File file;
+        ImageView image;
+        public FileAndView(File file, ImageView image) {
+            this.file = file;
+            this.image = image;
+        }
+    }
+
 }

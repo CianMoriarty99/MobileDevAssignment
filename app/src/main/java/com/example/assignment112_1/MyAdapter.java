@@ -19,19 +19,15 @@ import com.example.assignment112_1.model.PhotoData;
 import java.io.File;
 import java.util.List;
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder> {
-    private Context context;
+public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder>  {
     private List<PhotoData> items;
+    private final ImageListener mImageListener;
 
-    public MyAdapter(List<PhotoData> items) {
+    public MyAdapter(List<PhotoData> items, ImageListener mImageListener) {
         this.items = items;
+        this.mImageListener = mImageListener;
     }
 
-    public MyAdapter(Context cont, List<PhotoData> items) {
-        super();
-        this.items = items;
-        context = cont;
-    }
 
     @NonNull
     @Override
@@ -39,9 +35,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder> {
         //Inflate the layout, initialize the View Holder
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_image,
                 parent, false);
-        View_Holder holder = new View_Holder(v);
-        context = parent.getContext();
-        return holder;
+        return new View_Holder(v, mImageListener);
     }
 
     @Override
@@ -69,12 +63,25 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder> {
         return items.size();
     }
 
-    public static class View_Holder extends RecyclerView.ViewHolder {
-        ImageView imageView;
 
-        View_Holder(View itemView) {
+    public interface ImageListener {
+        void onImageClick(int position);
+    }
+
+    public class View_Holder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        ImageView imageView;
+        ImageListener imageListener;
+
+        View_Holder(View itemView, ImageListener imageListener) {
             super(itemView);
             imageView = itemView.findViewById(R.id.image_item);
+            itemView.setOnClickListener(this);
+            this.imageListener = imageListener;
+        }
+
+        @Override
+        public void onClick(View view) {
+            imageListener.onImageClick(getAdapterPosition());
         }
     }
 
@@ -86,8 +93,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder> {
         this.items = items;
     }
 
-
-    private class UploadSingleImageTask extends  AsyncTask<FileAndHolder, Void, Bitmap> {
+    //TODO move into service
+    private static class UploadSingleImageTask extends  AsyncTask<FileAndHolder, Void, Bitmap> {
         FileAndHolder fileAndHolder;
 
         @Override
