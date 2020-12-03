@@ -17,16 +17,21 @@ public class PhotoData implements Parcelable {
     @PrimaryKey(autoGenerate = true) private int id=0;
     private String photoFile;
     private String thumbFile;
-   // private String description;
+    private Boolean hasLoc;
+    private float[] loc;
+    private String description;
    // private String title;
    // private String location;
 
     @Ignore
     public Bitmap picture;
 
-    public PhotoData(String photoFile, String thumbFile) {
+    public PhotoData(String photoFile, String thumbFile, Boolean hasLoc, float[] loc, String description) {
         this.photoFile = photoFile;
         this.thumbFile = thumbFile;
+        this.loc = loc;
+        this.hasLoc = hasLoc;
+        this.description = description;
     }
 
 
@@ -54,6 +59,27 @@ public class PhotoData implements Parcelable {
     }
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public float[] getLoc() {
+        return loc;
+    }
+    public void setLoc(float[] loc) {
+        this.loc = loc;
+    }
+
+    public Boolean getHasLoc() {
+        return hasLoc;
+    }
+    public void setHasLoc(Boolean hasLoc) {
+        this.hasLoc = hasLoc;
     }
 
     public String getPhotoFile() {

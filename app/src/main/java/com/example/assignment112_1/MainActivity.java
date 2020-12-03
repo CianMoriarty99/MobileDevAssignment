@@ -20,7 +20,6 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 
@@ -37,6 +36,7 @@ import pl.aprilapps.easyphotopicker.EasyImage;
 
 import android.app.Dialog;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos-> {
+            //TODO check location data works
             myPictureList = photos;
             mAdapter.setItems(photos);
             mAdapter.notifyDataSetChanged();
@@ -96,30 +97,44 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
     @Override
     public void onImageClick(int position) {
-        PhotoData item = myPictureList.get(position);
-        ShowDialogBox(item);
+        PhotoData imageData = myPictureList.get(position);
+        ShowDialogBox(imageData);
     }
 
-    public void ShowDialogBox(final PhotoData item){
+    public void ShowDialogBox(final PhotoData imageData){
         final Dialog dialog = new Dialog(this);
 
         dialog.setContentView(R.layout.custom_dialog);
 
         //Getting custom dialog views
-        TextView Image_name = dialog.findViewById(R.id.txt_Image_name);
-        ImageView Image = dialog.findViewById(R.id.img);
-        Button btn_Full = dialog.findViewById(R.id.btn_full);
+        TextView Image_name = dialog.findViewById(R.id.txt_image_title);
+        ImageView imageView = dialog.findViewById(R.id.img);
+        EditText descriptionView = dialog.findViewById(R.id.txt_image_desc);
         Button btn_Close = dialog.findViewById(R.id.btn_close);
+        Button btn_Save = dialog.findViewById(R.id.btn_save);
 
-        String title = "TODO get title";
+        //TODO change to path title - don't show if image is part of path?
+        String title = imageData.getPhotoFile();
 
         //extracting name
         int index = title.indexOf("/");
         String name = title.substring(index+1,title.length());
         Image_name.setText(name);
 
+        descriptionView.setText(imageData.getDescription());
+
         //TODO use async task?
-        Image.setImageBitmap(BitmapFactory.decodeFile(item.getThumbFile()));
+        imageView.setImageBitmap(BitmapFactory.decodeFile(imageData.getPhotoFile()));
+
+        btn_Save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String description = descriptionView.getText().toString();
+                imageData.setDescription(description);
+                model.updatePhotoData(imageData);
+                dialog.dismiss();
+            }
+        });
 
         btn_Close.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,11 +143,11 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
             }
         });
 
-        btn_Full.setOnClickListener(new View.OnClickListener() {
+        imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, FullView.class);
-                i.putExtra("img", item);
+                i.putExtra("img", imageData);
                 startActivity(i);
             }
         });
@@ -176,8 +191,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private void onPhotosReturned(List<File> returnedPhotos) {
         Log.d("NPHOTOS", returnedPhotos.toString());
         for (File file : returnedPhotos) {
-           PhotoData photo = new PhotoData(file.toString(), file.toString());
-           model.insertPhotoData(photo);
+           model.insertPhotoData(file);
         }
     }
 
@@ -242,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         return activity;
     }
 
-    //TODO move into service
+    //TODO async task for uploading images - move into service and use the same one for adaptor and this??
     private static class UploadSingleImageTask extends AsyncTask<FileAndView, Void, Bitmap> {
         FileAndView fileAndView;
 

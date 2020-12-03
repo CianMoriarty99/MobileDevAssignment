@@ -1,7 +1,6 @@
 
 package com.example.assignment112_1;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
