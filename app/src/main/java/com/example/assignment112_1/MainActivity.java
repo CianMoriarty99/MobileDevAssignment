@@ -93,6 +93,16 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                 EasyImage.openCamera(getActivity(), 0);
             }
         });
+
+        FloatingActionButton fab_2 = (FloatingActionButton) findViewById(R.id.fab_visit);
+        fab_2.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), VisitActivity.class);
+                startActivity(intent);
+        }
+        });
     }
 
     @Override
