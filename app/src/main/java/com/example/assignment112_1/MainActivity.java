@@ -5,6 +5,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
  
 import android.Manifest;
@@ -21,6 +22,9 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.example.assignment112_1.model.PhotoData;
@@ -29,6 +33,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import pl.aprilapps.easyphotopicker.DefaultCallback;
@@ -48,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private PhotoViewModel model;
     private List<PhotoData> myPictureList;
     private  MyAdapter mAdapter;
+    public static boolean sortByDate, sortByPath, listViewBool;
 
 
 
@@ -67,12 +73,37 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         myPictureList = new ArrayList<>();
         mAdapter = new MyAdapter(myPictureList, this);
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+
+        if(listViewBool)
+        {
+            mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        } else {
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        }
+
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos-> {
             //TODO check location data works
             myPictureList = photos;
+
+
+
+
+
+            if(sortByDate){
+
+                Collections.sort(myPictureList, (d1, d2) -> {
+                    return d2.getId() - d1.getId();
+                });
+
+            }else {
+
+                Collections.sort(myPictureList, (d1, d2) -> {
+                    return d1.getId() - d2.getId();
+                });
+            }
+
             mAdapter.setItems(photos);
             mAdapter.notifyDataSetChanged();
             Log.d("NPHOTOS", mAdapter.getItems().toString());
@@ -163,6 +194,45 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         });
 
         dialog.show();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.example_men, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+            case R.id.changeView:
+                listViewBool = !listViewBool;
+                Log.d("PICTURES", String.valueOf(listViewBool));
+                this.recreate();
+
+
+            case R.id.dateSort:
+                sortByPath = false;
+                sortByDate = !sortByDate;
+                Log.d("PICTURES", String.valueOf(sortByDate));
+                this.recreate();
+                return true;
+
+            case R.id.pathSort:
+                sortByPath = !sortByPath;
+                sortByDate = false;
+                Log.d("PICTURES", String.valueOf(sortByPath));
+                this.recreate();
+                return true;
+
+
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 
