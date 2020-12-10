@@ -6,12 +6,92 @@
     android:layout_height="match_parent"
     tools:context=".FullView">
 
-    <ImageView
-        android:id="@+id/img_full"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@mipmap/ic_launcher_round"
-        android:scaleType="fitXY"
-        />
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <RelativeLayout
+            android:id="@+id/form_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+            android:id="@+id/txt_Image_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Path Title"
+            android:textSize="20sp"
+            android:padding="10dp"
+            />
+
+
+            <ImageView
+                android:id="@+id/img_full"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_launcher_round"
+                android:layout_below="@id/txt_Image_name"
+                android:adjustViewBounds="true"
+                />
+
+            <TextView
+                android:id="@+id/textLabel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_below="@id/img_full"
+                android:text="Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et bibendum dolor. Phasellus congue porta est ac vehicula. Vestibulum tincidunt, risus vitae pretium mattis, dolor ipsum accumsan orci, ut pulvinar lectus magna sollicitudin libero. Sed rhoncus porttitor velit sed pretium. Donec fringilla felis quis nunc tristique, vel aliquam turpis tempor. Phasellus quis augue placerat, egestas est et, dignissim lectus. Curabitur tristique, purus vel sodales iaculis, magna nisl semper ex, eget tincidunt neque eros eget leo. Integer cursus mauris purus, eu dapibus orci ultrices id. Curabitur nec nisl vel ipsum lobortis ullamcorper.  "
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"/>
+
+            <TextView
+                android:id="@+id/textLabel2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_below="@id/textLabel"
+                android:text="Sensor Readings: 1234546546256 "
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"/>
+
+            <TextView
+                android:id="@+id/textLabel3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_below="@id/textLabel2"
+                android:text="Interesting Metadata? "
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"/>
+
+            <TextView
+                android:id="@+id/textLabel4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_below="@id/textLabel3"
+                android:text="Map stuff below this:"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"/>
+
+
+            <ImageView
+                android:id="@+id/map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_launcher_round"
+                android:layout_below="@id/textLabel4"
+                android:adjustViewBounds="true"
+                android:padding="10dp"
+                />
+        </RelativeLayout>
+    </ScrollView>
 
 </RelativeLayout>
