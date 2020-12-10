@@ -97,12 +97,34 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                     return d2.getId() - d1.getId();
                 });
 
-            }else {
+            }else  {
 
                 Collections.sort(myPictureList, (d1, d2) -> {
                     return d1.getId() - d2.getId();
                 });
             }
+
+            if(sortByPath){
+
+                Collections.sort(myPictureList, (d1, d2) -> {
+
+                    try {
+                        String path1 = d1.getPathTitle();
+                        String path2 = d2.getPathTitle();
+
+                        int compare = path1.compareTo(path2);
+                        Log.d("GREATSUCCESS", String.valueOf(compare));
+                        return compare;
+                    }
+                    catch (Exception e) {
+                        Log.d("GREATSUCCESS", "0");
+                        return -1;
+                    }
+
+
+                });
+            }
+
 
             mAdapter.setItems(photos);
             mAdapter.notifyDataSetChanged();
