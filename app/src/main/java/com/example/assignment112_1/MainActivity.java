@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private MyAdapter mAdapter;
     public static boolean sortByDate, sortByPath, listViewBool, mapBool;
     private GoogleMap mMap;
+    Marker currentMarker;
 
 
     @Override
@@ -101,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         mAdapter = new MyAdapter(myPictureList, this);
         mRecyclerView.setAdapter(mAdapter);
 
+        FloatingActionButton fabCentre = findViewById(R.id.fab_centre);
+
         if (listViewBool) {
             mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
         } else {
@@ -109,9 +112,12 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         if (mapBool) {
             mapFragment.getView().setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.INVISIBLE);
+            fabCentre.setVisibility(View.VISIBLE);
+
         } else {
             mRecyclerView.setVisibility(View.VISIBLE);
             mapFragment.getView().setVisibility(View.INVISIBLE);
+            fabCentre.setVisibility(View.INVISIBLE);
         }
 
         //Retrieve and observe photo data in U.I
@@ -126,11 +132,8 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                     return d1.getId() - d2.getId();
                 });
             }
-
             if(sortByPath){
-
                 Collections.sort(myPictureList, (d1, d2) -> {
-
                     try {
                         String path1 = d1.getPathTitle();
                         String path2 = d2.getPathTitle();
@@ -143,8 +146,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                         Log.d("SORTBYPATH", "0");
                         return -1;
                     }
-
-
                 });
             }
             mAdapter.setItems(photos);
@@ -162,6 +163,14 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
             @Override
             public void onClick(View view) {
                 EasyImage.openGallery(getActivity(), 0);
+            }
+        });
+
+
+        fabCentre.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getLocation();
             }
         });
 
@@ -395,10 +404,12 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         String locationProvider = LocationManager.NETWORK_PROVIDER;
         @SuppressLint("MissingPermission") android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
         LatLng loc = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-        if (mMap != null)
-            mMap.addMarker(new MarkerOptions().position(loc)
+        if (mMap != null) {
+            if (currentMarker != null) currentMarker.remove();
+            currentMarker = mMap.addMarker(new MarkerOptions().position(loc)
                     .title("Current Position"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+        }
     }
 
 
@@ -434,9 +445,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                return false;
             }
         });
-
-        getLocation();
-
     }
 
     //TODO async task for showing images - move into service and use the same one for adaptor and this??
