@@ -1,21 +1,17 @@
 package com.example.assignment112_1.model;
 
 import android.app.Application;
-import android.media.ExifInterface;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.assignment112_1.BitmapHelper;
-import com.example.assignment112_1.LocationHelper;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static com.example.assignment112_1.LocationHelper.getLocationData;
 
 public class PhotoRepository extends ViewModel {
     private final PhotoDAO mPhotoDao;

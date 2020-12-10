@@ -7,17 +7,23 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
- 
+
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,11 +35,28 @@ import android.view.View;
 
 import com.example.assignment112_1.model.PhotoData;
 import com.example.assignment112_1.model.PhotoViewModel;
+import com.example.assignment112_1.model.VisitPoint;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import pl.aprilapps.easyphotopicker.DefaultCallback;
@@ -45,72 +68,72 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements MyAdapter.ImageListener {
+public class MainActivity extends AppCompatActivity implements MyAdapter.ImageListener, OnMapReadyCallback {
 
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 2987;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 7829;
     private Activity activity;
     private PhotoViewModel model;
     private List<PhotoData> myPictureList;
-    private  MyAdapter mAdapter;
-    public static boolean sortByDate, sortByPath, listViewBool;
-
+    private MyAdapter mAdapter;
+    public static boolean sortByDate, sortByPath, listViewBool, mapBool;
+    private GoogleMap mMap;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        activity= this;
+        activity = this;
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
 
         // required by Android 6.0 +
         checkPermissions(getApplicationContext());
         initEasyImage();
-      
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map_frag);
+        mapFragment.getMapAsync(this);
+
         RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
         // set up the RecyclerView
         myPictureList = new ArrayList<>();
         mAdapter = new MyAdapter(myPictureList, this);
         mRecyclerView.setAdapter(mAdapter);
 
-        if(listViewBool)
-        {
+        if (listViewBool) {
             mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
         } else {
             mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         }
-
+        if (mapBool) {
+            mapFragment.getView().setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.INVISIBLE);
+        } else {
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mapFragment.getView().setVisibility(View.INVISIBLE);
+        }
 
         //Retrieve and observe photo data in U.I
-        model.getPhotoData().observe(this, photos-> {
-            //TODO check location data works
+        model.getPhotoData().observe(this, photos -> {
             myPictureList = photos;
-
-
-
-
-
-            if(sortByDate){
-
+            if (sortByDate) {
                 Collections.sort(myPictureList, (d1, d2) -> {
                     return d2.getId() - d1.getId();
                 });
 
-            }else {
-
+            } else {
                 Collections.sort(myPictureList, (d1, d2) -> {
                     return d1.getId() - d2.getId();
                 });
             }
-
             mAdapter.setItems(photos);
             mAdapter.notifyDataSetChanged();
-            Log.d("NPHOTOS", mAdapter.getItems().toString());
         });
 
+
         //Retrieve and observe photo data in U.I
-        model.getVisitData().observe(this, visits-> {
+        model.getVisitData().observe(this, visits -> {
             Log.d("NVISITS", visits.toString());
         });
 
@@ -131,13 +154,12 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         });
 
         FloatingActionButton fab_2 = (FloatingActionButton) findViewById(R.id.fab_visit);
-        fab_2.setOnClickListener(new View.OnClickListener()
-        {
+        fab_2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), VisitActivity.class);
                 startActivity(intent);
-        }
+            }
         });
     }
 
@@ -147,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         ShowDialogBox(imageData);
     }
 
-    public void ShowDialogBox(final PhotoData imageData){
+    public void ShowDialogBox(final PhotoData imageData) {
         final Dialog dialog = new Dialog(this);
 
         dialog.setContentView(R.layout.custom_dialog);
@@ -212,7 +234,14 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         switch (item.getItemId()) {
 
             case R.id.changeView:
-                listViewBool = !listViewBool;
+                if (!listViewBool & mapBool) {
+                    listViewBool = true;
+                    mapBool = false;
+                } else if (!listViewBool & !mapBool) {
+                    mapBool = true;
+                } else {
+                    listViewBool = false;
+                }
                 Log.d("PICTURES", String.valueOf(listViewBool));
                 this.recreate();
 
@@ -273,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private void onPhotosReturned(List<File> returnedPhotos) {
         Log.d("NPHOTOS", returnedPhotos.toString());
         for (File file : returnedPhotos) {
-           model.insertPhotoData(file);
+            model.insertPhotoData(file);
         }
     }
 
@@ -336,6 +365,58 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
     public Activity getActivity() {
         return activity;
+    }
+
+    private LocationRequest mLocationRequest;
+    private FusedLocationProviderClient mFusedLocationClient;
+
+    public void getLocation() {
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        String locationProvider = LocationManager.NETWORK_PROVIDER;
+        @SuppressLint("MissingPermission") android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+        LatLng loc = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+        if (mMap != null)
+            mMap.addMarker(new MarkerOptions().position(loc)
+                    .title("Current Position"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+    }
+
+
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
+        Canvas canvas = new Canvas();
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        canvas.setBitmap(bitmap);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        drawable.draw(canvas);
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
+
+        mMap = googleMap;
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        for (PhotoData data : myPictureList) {
+            if (data.getHasLoc()) {
+                MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(data.getLoc()[0], data.getLoc()[1]))
+                        .title(data.getPathTitle())
+                        //TODO Show photo thumbnail?
+                        .icon(icon);
+
+                Marker m =  mMap.addMarker(markerOptions);
+                m.setTag(data);
+            }
+        }
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+               PhotoData data = (PhotoData) marker.getTag();
+               ShowDialogBox(data);
+               return false;
+            }
+        });
+
+        getLocation();
+
     }
 
     //TODO async task for showing images - move into service and use the same one for adaptor and this??
