@@ -57,7 +57,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private List<VisitPoint> pointsList;
     private PhotoViewModel model;
     private String title;
-    private List<File> images;
+    private List<FileAndLoc> images;
 
 
     @Override
@@ -122,8 +122,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         Date currentDateTime = new Date();
         VisitData visit = new VisitData(title, currentDateTime, pointsList);
         model.insertVisitData(visit);
-        for (File image : images) {
-            model.insertPhotoData(image, title);
+        for (FileAndLoc image : images) {
+            model.insertPhotoData(image.getFile(), title, image.getLoc());
         }
     }
 
@@ -237,10 +237,10 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private void onPhotosReturned(List<File> returnedPhotos) {
         mLocationRequest = new LocationRequest();
         for (File file : returnedPhotos) {
-            images.add(file);
 
-            float[] location = LocationHelper.getLocationData(file.getAbsolutePath()).getLatLong();
-
+            float[] loc = {(float) mCurrentLocation.getLatitude(), (float) mCurrentLocation.getLongitude()};
+            FileAndLoc fileAndLoc = new FileAndLoc(file, loc);
+            images.add(fileAndLoc);
 
             @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
             Canvas canvas = new Canvas();
@@ -258,6 +258,24 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
             mMap.addMarker(markerOptions);
             Log.d("MARK!", "Mark");
+        }
+    }
+
+    public static final class FileAndLoc {
+        private final float[] loc;
+        private final File file;
+
+        public FileAndLoc(File first, float[] second) {
+            this.file = first;
+            this.loc = second;
+        }
+
+        public float[] getLoc() {
+            return loc;
+        }
+
+        public File getFile() {
+            return file;
         }
     }
 }

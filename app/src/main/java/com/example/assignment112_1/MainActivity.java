@@ -160,12 +160,9 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         Button btn_Save = dialog.findViewById(R.id.btn_save);
 
         //TODO change to path title - don't show if image is part of path?
-        String title = imageData.getPhotoFile();
+        String title = imageData.getPathTitle();
 
-        //extracting name
-        int index = title.indexOf("/");
-        String name = title.substring(index+1,title.length());
-        Image_name.setText(name);
+        Image_name.setText(title);
 
         descriptionView.setText(imageData.getDescription());
 

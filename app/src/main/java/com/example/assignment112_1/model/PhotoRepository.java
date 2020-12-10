@@ -45,8 +45,8 @@ public class PhotoRepository extends ViewModel {
     public void insertPhotoData(File photoFile) {
         new InsertPhotoAsync(mPhotoDao, photoFile, mApplication).execute();
     }
-    public void insertPhotoData(File photoFile, String title) {
-        new InsertPhotoAsync(mPhotoDao, photoFile, mApplication, title).execute();
+    public void insertPhotoData(File photoFile, String title, float[] loc) {
+        new InsertPhotoAsync(mPhotoDao, photoFile, mApplication, title, loc).execute();
     }
 
     public void insertVisitData(VisitData visitData) {
@@ -80,31 +80,33 @@ public class PhotoRepository extends ViewModel {
         private final File mPhotoFile;
         private final Application mApplication;
         private final String mTitle;
+        private float[] mLoc;
+        private Boolean mBool;
 
         InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application) {
             mPhotoDao = dao;
             mPhotoFile = photoFile;
             mApplication = application;
-            mTitle = null;
+            mTitle  = null;
+            mLoc = new float[]{(float) 0.0, (float) 0.0};
+            mBool = false;
         }
 
-        InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application, String title) {
+        InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application, String title, float[] loc) {
             mPhotoDao = dao;
             mPhotoFile = photoFile;
             mApplication = application;
             mTitle = title;
+            mLoc = loc;
+            mBool = true;
         }
 
         @Override
         protected Void doInBackground(final Void... params) {
             try {
-
                 String photoFile = mPhotoFile.toString();
                 File thumb = BitmapHelper.generateThumbnail(photoFile, 150, 150, mApplication);
-                LocationHelper.LocBool locBool = getLocationData(photoFile);
-                float[] loc = locBool.getLatLong();
-                Boolean bool = locBool.getBool();
-                PhotoData mPhotoData = new PhotoData(photoFile, thumb.toString(), bool, loc, "", mTitle);
+                PhotoData mPhotoData = new PhotoData(photoFile, thumb.toString(), mBool, mLoc, "", mTitle);
                 mPhotoDao.insert(mPhotoData);
             } catch (IOException e) {
                 e.printStackTrace();
