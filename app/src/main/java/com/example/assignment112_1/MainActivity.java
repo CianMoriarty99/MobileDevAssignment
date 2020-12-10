@@ -113,11 +113,11 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                         String path2 = d2.getPathTitle();
 
                         int compare = path1.compareTo(path2);
-                        Log.d("GREATSUCCESS", String.valueOf(compare));
+                        Log.d("SORTBYPATH", String.valueOf(compare));
                         return compare;
                     }
                     catch (Exception e) {
-                        Log.d("GREATSUCCESS", "0");
+                        Log.d("SORTBYPATH", "0");
                         return -1;
                     }
 
