@@ -4,6 +4,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,7 +14,12 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.assignment112_1.model.PhotoData;
+import com.example.assignment112_1.model.PhotoViewModel;
+import com.example.assignment112_1.model.VisitData;
+import com.example.assignment112_1.model.VisitPoint;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -21,14 +29,23 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
+import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
+
+import static java.util.Collections.emptyList;
 
 public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -37,6 +54,11 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private LocationRequest mLocationRequest;
     private FusedLocationProviderClient mFusedLocationClient;
     private Button mButtonStop;
+    private List<VisitPoint> pointsList;
+    private PhotoViewModel model;
+    private String title;
+    private List<File> images;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +68,11 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
+        pointsList = new ArrayList<>();
+        images =  new ArrayList<>();
+        title = getIntent().getStringExtra("Title");
 
         mButtonStop = (Button) findViewById(R.id.button_stop);
         mButtonStop.setOnClickListener((view) -> {
@@ -61,8 +88,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_camera);
         fab.setOnClickListener((view) -> {
             EasyImage.openCamera(TrackingActivity.this, 0);
-            // TODO when getting a new picture also record the current location to display the picture on the map
         });
+
     }
 
     private void startLocationUpdates() {
@@ -92,7 +119,12 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     }
 
     private void saveVisit() {
-        // TODO save the visit tracking information to the database
+        Date currentDateTime = new Date();
+        VisitData visit = new VisitData(title, currentDateTime, pointsList);
+        model.insertVisitData(visit);
+        for (File image : images) {
+            model.insertPhotoData(image, title);
+        }
     }
 
     @Override
@@ -116,10 +148,13 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             mCurrentLocation = locationResult.getLastLocation();
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
             Log.i("MAP", "new location " + mCurrentLocation.toString());
+            LatLng loc = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
             if (mMap != null)
-                mMap.addMarker(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
+                mMap.addMarker(new MarkerOptions().position(loc)
                         .title(mLastUpdateTime));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 14.0f));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+            VisitPoint visitPoint = new VisitPoint(loc.toString());
+            pointsList.add(visitPoint);
         }
     };
 
@@ -164,5 +199,65 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        EasyImage.handleActivityResult(requestCode, resultCode, data, this, new DefaultCallback() {
+            @Override
+            public void onImagePickerError(Exception e, EasyImage.ImageSource source, int type) {
+                //Some error handling
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onImagesPicked(List<File> imageFiles, EasyImage.ImageSource source, int type) {
+                onPhotosReturned(imageFiles);
+            }
+
+            @Override
+            public void onCanceled(EasyImage.ImageSource source, int type) {
+                //Cancel handling, you might wanna remove taken photo if it was canceled
+                if (source == EasyImage.ImageSource.CAMERA) {
+                    File photoFile = EasyImage.lastlyTakenButCanceledPhoto(getApplicationContext());
+                    if (photoFile != null) photoFile.delete();
+                }
+            }
+        });
+    }
+
+
+    /**
+     * save returned photos to the d.b and link with the visit
+     * @param returnedPhotos
+     */
+    private void onPhotosReturned(List<File> returnedPhotos) {
+        mLocationRequest = new LocationRequest();
+        for (File file : returnedPhotos) {
+            images.add(file);
+
+            float[] location = LocationHelper.getLocationData(file.getAbsolutePath()).getLatLong();
+
+
+            @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
+            Canvas canvas = new Canvas();
+            Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            canvas.setBitmap(bitmap);
+            drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+            drawable.draw(canvas);
+            BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
+
+
+            MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
+                    .title("Photo")
+                    //TODO Show photo thumbnail?
+                    .icon(icon);
+
+            mMap.addMarker(markerOptions);
+            Log.d("MARK!", "Mark");
+        }
     }
 }

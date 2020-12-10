@@ -5,14 +5,23 @@ import android.icu.text.CaseMap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+import com.example.assignment112_1.TrackingActivity;
+
 import java.io.File;
 
-@Entity
+@Entity(foreignKeys = {
+@ForeignKey(entity = VisitData.class,
+        parentColumns = "title",
+        childColumns = "path_title",
+        onDelete = ForeignKey.CASCADE,
+        onUpdate = ForeignKey.CASCADE)})
 public class PhotoData implements Parcelable {
     @PrimaryKey(autoGenerate = true) private int id=0;
     private String photoFile;
@@ -20,18 +29,19 @@ public class PhotoData implements Parcelable {
     private Boolean hasLoc;
     private float[] loc;
     private String description;
-   // private String title;
-   // private String location;
+    @ColumnInfo(name="path_title")
+    private String pathTitle;
 
     @Ignore
     public Bitmap picture;
 
-    public PhotoData(String photoFile, String thumbFile, Boolean hasLoc, float[] loc, String description) {
+    public PhotoData(String photoFile, String thumbFile, Boolean hasLoc, float[] loc, String description, String pathTitle) {
         this.photoFile = photoFile;
         this.thumbFile = thumbFile;
         this.loc = loc;
         this.hasLoc = hasLoc;
         this.description = description;
+        this.pathTitle = pathTitle;
     }
 
 
@@ -102,6 +112,14 @@ public class PhotoData implements Parcelable {
     public void setPicture(Bitmap picture) {
         this.picture = picture;
     }
+
+    public String getPathTitle() {
+        return pathTitle;
+    }
+    public void setPathTitle(String title) {
+        this.pathTitle = title;
+    }
+
 
     @Override
     public int describeContents() {

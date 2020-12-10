@@ -78,6 +78,11 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
             Log.d("NPHOTOS", mAdapter.getItems().toString());
         });
 
+        //Retrieve and observe photo data in U.I
+        model.getVisitData().observe(this, visits-> {
+            Log.d("NVISITS", visits.toString());
+        });
+
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
         fabGallery.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -195,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
 
     /**
-     * add to the grid
+     * save returned photos in d.b
      * @param returnedPhotos
      */
     private void onPhotosReturned(List<File> returnedPhotos) {
@@ -266,8 +271,8 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         return activity;
     }
 
-    //TODO async task for uploading images - move into service and use the same one for adaptor and this??
-    private static class UploadSingleImageTask extends AsyncTask<FileAndView, Void, Bitmap> {
+    //TODO async task for showing images - move into service and use the same one for adaptor and this??
+    private static class ShowSingleImageTask extends AsyncTask<FileAndView, Void, Bitmap> {
         FileAndView fileAndView;
 
         @Override

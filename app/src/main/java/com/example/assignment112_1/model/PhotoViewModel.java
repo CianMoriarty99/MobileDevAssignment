@@ -11,15 +11,21 @@ import java.util.List;
 public class PhotoViewModel extends AndroidViewModel {
     private PhotoRepository mRepository;
     private LiveData<List<PhotoData>> photos;
+    private LiveData<List<VisitData>> visits;
 
     public PhotoViewModel(Application application) {
         super(application);
         mRepository = new PhotoRepository(application);
         photos = mRepository.getPhotoData();
+        visits = mRepository.getVisitData();
     }
 
     public LiveData<List<PhotoData>> getPhotoData() {
         return  photos;
+    }
+
+    public LiveData<List<VisitData>> getVisitData() {
+        return  visits;
     }
 
     public void updatePhotoData(PhotoData photoData) {
@@ -27,5 +33,11 @@ public class PhotoViewModel extends AndroidViewModel {
     }
     public void insertPhotoData(File photoFile) {
         mRepository.insertPhotoData(photoFile);
+    }
+    public void insertPhotoData(File photoFile, String title) {
+        mRepository.insertPhotoData(photoFile, title);
+    }
+    public void insertVisitData(VisitData visitData) {
+        mRepository.insertVisitData(visitData);
     }
 }

@@ -3,15 +3,19 @@ package com.example.assignment112_1.model;
 import android.app.Application;
 import android.media.ExifInterface;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.assignment112_1.BitmapHelper;
+import com.example.assignment112_1.LocationHelper;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import static com.example.assignment112_1.LocationHelper.getLocationData;
 
 public class PhotoRepository extends ViewModel {
     private final PhotoDAO mPhotoDao;
@@ -30,29 +34,36 @@ public class PhotoRepository extends ViewModel {
     public LiveData<List<PhotoData>> getPhotoData() {
         return mPhotoDao.retrieveAllData();
     }
-
+    public LiveData<List<VisitData>> getVisitData() {
+        return mPhotoDao.retrieveAllVisitData();
+    }
 
     public void updatePhotoData(PhotoData photoData) {
-
+        new updatePhotoAsync(mPhotoDao, photoData, mApplication).execute();
     }
-
 
     public void insertPhotoData(File photoFile) {
-        new InsertIntoDbAsync(mPhotoDao, photoFile, mApplication).execute();
+        new InsertPhotoAsync(mPhotoDao, photoFile, mApplication).execute();
+    }
+    public void insertPhotoData(File photoFile, String title) {
+        new InsertPhotoAsync(mPhotoDao, photoFile, mApplication, title).execute();
     }
 
+    public void insertVisitData(VisitData visitData) {
+        new InsertVisitAsync(mPhotoDao, visitData, mApplication).execute();
+    }
 
-
-    private static class updateDbAsync extends AsyncTask<Void, Void, Void> {
+    private static class updatePhotoAsync extends AsyncTask<Void, Void, Void> {
         private final PhotoDAO mPhotoDao;
         private final PhotoData mPhotoData;
         private final  Application mApplication;
 
-        updateDbAsync(PhotoDAO dao, PhotoData photoData, Application application) {
+        updatePhotoAsync(PhotoDAO dao, PhotoData photoData, Application application) {
             mPhotoDao = dao;
             mPhotoData = photoData;
             mApplication = application;
         }
+
 
         @Override
         protected Void doInBackground(final Void... params) {
@@ -64,15 +75,24 @@ public class PhotoRepository extends ViewModel {
     /**
      * Async process to insert photos into the database in the background.
      */
-    private static class InsertIntoDbAsync extends AsyncTask<Void, Void, Void> {
+    private static class InsertPhotoAsync extends AsyncTask<Void, Void, Void> {
         private final PhotoDAO mPhotoDao;
         private final File mPhotoFile;
         private final Application mApplication;
+        private final String mTitle;
 
-        InsertIntoDbAsync(PhotoDAO dao, File photoFile, Application application) {
+        InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application) {
             mPhotoDao = dao;
             mPhotoFile = photoFile;
             mApplication = application;
+            mTitle = null;
+        }
+
+        InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application, String title) {
+            mPhotoDao = dao;
+            mPhotoFile = photoFile;
+            mApplication = application;
+            mTitle = title;
         }
 
         @Override
@@ -81,10 +101,10 @@ public class PhotoRepository extends ViewModel {
 
                 String photoFile = mPhotoFile.toString();
                 File thumb = BitmapHelper.generateThumbnail(photoFile, 150, 150, mApplication);
-                LocBool locBool = getLocationData(photoFile);
-                float[] loc = locBool.latLong;
-                Boolean bool = locBool.bool;
-                PhotoData mPhotoData = new PhotoData(photoFile, thumb.toString(), bool, loc, "");
+                LocationHelper.LocBool locBool = getLocationData(photoFile);
+                float[] loc = locBool.getLatLong();
+                Boolean bool = locBool.getBool();
+                PhotoData mPhotoData = new PhotoData(photoFile, thumb.toString(), bool, loc, "", mTitle);
                 mPhotoDao.insert(mPhotoData);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -93,33 +113,25 @@ public class PhotoRepository extends ViewModel {
         }
     }
 
-    private static LocBool getLocationData(String file) {
-        ExifInterface exif = null;
-        try {
-            exif = new ExifInterface(file);
-            float[] latLong = new float[2];
-            boolean hasLatLong = exif.getLatLong(latLong);
-            if (hasLatLong) {
-                System.out.println("Latitude: " + latLong[0]);
-                System.out.println("Longitude: " + latLong[1]);
-            }
-            return new LocBool(latLong, true);
-        } catch (IOException e) {
-            e.printStackTrace();
+
+    /**
+     * Async process to insert photos into the database in the background.
+     */
+    private static class InsertVisitAsync extends AsyncTask<Void, Void, Void> {
+        private final PhotoDAO mPhotoDao;
+        private final VisitData mVisitData;
+        private final Application mApplication;
+
+        InsertVisitAsync(PhotoDAO dao, VisitData visitData, Application application) {
+            mPhotoDao = dao;
+            mVisitData = visitData;
+            mApplication = application;
         }
-        float[] latLong = {(float) 0.0};
 
-        return new LocBool(latLong, false);
-    }
-
-    static final class LocBool {
-        private final float[] latLong;
-        private final Boolean bool;
-
-        public LocBool(float[] first, Boolean second) {
-            this.latLong = first;
-            this.bool = second;
+        @Override
+        protected Void doInBackground(final Void... params) {
+            mPhotoDao.insert(mVisitData);
+            return null;
         }
     }
-
 }

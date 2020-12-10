@@ -35,8 +35,8 @@ public class VisitActivity extends AppCompatActivity {
     public void startVisit(View view) {
         Intent intent = new Intent(this, TrackingActivity.class);
         EditText visit_title = (EditText) findViewById(R.id.visit_title);
-        String message = visit_title.getText().toString();
-        intent.putExtra(EXTRA_MESSAGE, message);
+        String title = visit_title.getText().toString();
+        intent.putExtra("Title", title);
         startActivity(intent);
     }
 }

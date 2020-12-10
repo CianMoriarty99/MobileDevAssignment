@@ -28,8 +28,25 @@ public interface PhotoDAO {
     @Query("SELECT * FROM PhotoData ORDER BY id ASC")
     LiveData<List<PhotoData>> retrieveAllData();
 
-
     @Delete
     void deleteAll(PhotoData...photoData);
+
+    @Insert
+    void insertAll(VisitData... visitdata);
+
+    @Insert
+    void insert(VisitData visitdata);
+
+    @Update
+    public void update(VisitData visitData);
+
+    @Delete
+    void delete (VisitData visitData);
+
+    @Query("SELECT * FROM VisitData")
+    LiveData<List<VisitData>> retrieveAllVisitData();
+
+    @Delete
+    void deleteAll(VisitData...visitData);
 }
 
