@@ -26,22 +26,25 @@ public class PhotoData implements Parcelable {
     @PrimaryKey(autoGenerate = true) private int id=0;
     private String photoFile;
     private String thumbFile;
-    private Boolean hasLoc;
-    private float[] loc;
+    private Float[] loc;
     private String description;
     @ColumnInfo(name="path_title")
     private String pathTitle;
+    private Float pressure;
+    private Float temperature;
 
     @Ignore
     public Bitmap picture;
 
-    public PhotoData(String photoFile, String thumbFile, Boolean hasLoc, float[] loc, String description, String pathTitle) {
+    public PhotoData(String photoFile, String thumbFile, Float[] loc,
+                     String description, String pathTitle, Float temperature, Float pressure) {
         this.photoFile = photoFile;
         this.thumbFile = thumbFile;
         this.loc = loc;
-        this.hasLoc = hasLoc;
         this.description = description;
         this.pathTitle = pathTitle;
+        this.temperature = temperature;
+        this.pressure = pressure;
     }
 
 
@@ -78,18 +81,11 @@ public class PhotoData implements Parcelable {
         this.description = description;
     }
 
-    public float[] getLoc() {
+    public Float[] getLoc() {
         return loc;
     }
-    public void setLoc(float[] loc) {
+    public void setLoc(Float[] loc) {
         this.loc = loc;
-    }
-
-    public Boolean getHasLoc() {
-        return hasLoc;
-    }
-    public void setHasLoc(Boolean hasLoc) {
-        this.hasLoc = hasLoc;
     }
 
     public String getPhotoFile() {
@@ -118,6 +114,20 @@ public class PhotoData implements Parcelable {
     }
     public void setPathTitle(String title) {
         this.pathTitle = title;
+    }
+
+    public Float getTemperature() {
+        return temperature;
+    }
+    public void setTemperature(Float temperature) {
+        this.temperature = temperature;
+    }
+
+    public Float getPressure() {
+        return pressure;
+    }
+    public void setPressure(Float pressure) {
+        this.pressure = pressure;
     }
 
 

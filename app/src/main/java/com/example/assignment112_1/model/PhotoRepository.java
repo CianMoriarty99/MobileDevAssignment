@@ -41,8 +41,8 @@ public class PhotoRepository extends ViewModel {
     public void insertPhotoData(File photoFile) {
         new InsertPhotoAsync(mPhotoDao, photoFile, mApplication).execute();
     }
-    public void insertPhotoData(File photoFile, String title, float[] loc) {
-        new InsertPhotoAsync(mPhotoDao, photoFile, mApplication, title, loc).execute();
+    public void insertPhotoData(File photoFile, String title, Float[] loc, Float temperature, Float pressure) {
+        new InsertPhotoAsync(mPhotoDao, photoFile, mApplication, title, loc, temperature, pressure).execute();
     }
 
     public void insertVisitData(VisitData visitData) {
@@ -76,25 +76,29 @@ public class PhotoRepository extends ViewModel {
         private final File mPhotoFile;
         private final Application mApplication;
         private final String mTitle;
-        private float[] mLoc;
-        private Boolean mBool;
+        private final Float[] mLoc;
+        private final Float mPressure;
+        private final Float mTemperature;
 
         InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application) {
             mPhotoDao = dao;
             mPhotoFile = photoFile;
             mApplication = application;
             mTitle  = null;
-            mLoc = new float[]{(float) 0.0, (float) 0.0};
-            mBool = false;
+            mLoc = new Float[]{null};
+            mPressure = null;
+            mTemperature = null;
         }
 
-        InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application, String title, float[] loc) {
+        InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application, String title, Float[] loc, Float temp, Float pressure) {
             mPhotoDao = dao;
             mPhotoFile = photoFile;
             mApplication = application;
             mTitle = title;
             mLoc = loc;
-            mBool = true;
+            mTemperature = temp;
+            mPressure = pressure;
+
         }
 
         @Override
@@ -102,7 +106,7 @@ public class PhotoRepository extends ViewModel {
             try {
                 String photoFile = mPhotoFile.toString();
                 File thumb = BitmapHelper.generateThumbnail(photoFile, 150, 150, mApplication);
-                PhotoData mPhotoData = new PhotoData(photoFile, thumb.toString(), mBool, mLoc, "", mTitle);
+                PhotoData mPhotoData = new PhotoData(photoFile, thumb.toString(), mLoc, "", mTitle, mTemperature, mPressure);
                 mPhotoDao.insert(mPhotoData);
             } catch (IOException e) {
                 e.printStackTrace();

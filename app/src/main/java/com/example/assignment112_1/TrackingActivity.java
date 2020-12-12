@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.assignment112_1.model.PhotoData;
 import com.example.assignment112_1.model.PhotoViewModel;
 import com.example.assignment112_1.model.VisitData;
 import com.example.assignment112_1.model.VisitPoint;
@@ -38,14 +38,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
 
-import static java.util.Collections.emptyList;
 
 public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -57,7 +55,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private List<VisitPoint> pointsList;
     private PhotoViewModel model;
     private String title;
-    private List<FileAndLoc> images;
+    private List<FileAndSense> images;
+    private CommonSensor barometer;
+    private CommonSensor thermometer;
 
 
     @Override
@@ -81,6 +81,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             Intent intent = new Intent();
             intent.putExtra("exampleName", "exampleValue");
             setResult(RESULT_OK, intent);
+            stopLocationUpdates();
+            barometer.stopSensor();
+            thermometer.stopSensor();
             finish();
         });
         mButtonStop.setEnabled(true);
@@ -90,7 +93,37 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             EasyImage.openCamera(TrackingActivity.this, 0);
         });
 
+        barometer = new CommonSensor(this, Sensor.TYPE_PRESSURE, "Barometer");
+        thermometer = new CommonSensor(this, Sensor.TYPE_AMBIENT_TEMPERATURE, "Thermometer");
     }
+
+    private Location mCurrentLocation;
+    private String mLastUpdateTime;
+    LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            mCurrentLocation = locationResult.getLastLocation();
+            mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+            Log.d("MAP", "new location " + mCurrentLocation.toString());
+            LatLng loc = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+            if (mMap != null)
+                mMap.addMarker(new MarkerOptions().position(loc)
+                        .title(mLastUpdateTime));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+            float[] location = new float[]{(float) mCurrentLocation.getLatitude(), (float) mCurrentLocation.getLongitude()};
+
+            VisitPoint visitPoint;
+            if (thermometer.getSensorDataList().size() > 0 && barometer.getSensorDataList().size() > 0) {
+                float temp = thermometer.getSensorDataList().get(thermometer.getSensorDataList().size() - 1);
+                float pressure = barometer.getSensorDataList().get(barometer.getSensorDataList().size() - 1);
+                visitPoint = new VisitPoint(location, temp, pressure);
+            } else {
+                visitPoint = new VisitPoint(location, null, null);
+            }
+            pointsList.add(visitPoint);
+        }
+    };
 
     private void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -122,8 +155,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         Date currentDateTime = new Date();
         VisitData visit = new VisitData(title, currentDateTime, pointsList);
         model.insertVisitData(visit);
-        for (FileAndLoc image : images) {
-            model.insertPhotoData(image.getFile(), title, image.getLoc());
+        for (FileAndSense image : images) {
+            model.insertPhotoData(image.getFile(), title, image.getLoc(), image.getTemp(), image.getPressure());
         }
     }
 
@@ -136,27 +169,19 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        barometer.startSensing();
+        thermometer.startSensing();
         startLocationUpdates();
     }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopLocationUpdates();
+        barometer.stopSensor();
+        thermometer.stopSensor();
+    }
 
-    private Location mCurrentLocation;
-    private String mLastUpdateTime;
-    LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            super.onLocationResult(locationResult);
-            mCurrentLocation = locationResult.getLastLocation();
-            mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            Log.i("MAP", "new location " + mCurrentLocation.toString());
-            LatLng loc = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            if (mMap != null)
-                mMap.addMarker(new MarkerOptions().position(loc)
-                        .title(mLastUpdateTime));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
-            VisitPoint visitPoint = new VisitPoint(loc.toString());
-            pointsList.add(visitPoint);
-        }
-    };
+
 
     @SuppressLint("MissingPermission")
     @Override
@@ -231,11 +256,20 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
      * @param returnedPhotos
      */
     private void onPhotosReturned(List<File> returnedPhotos) {
-        mLocationRequest = new LocationRequest();
         for (File file : returnedPhotos) {
 
-            float[] loc = {(float) mCurrentLocation.getLatitude(), (float) mCurrentLocation.getLongitude()};
-            FileAndLoc fileAndLoc = new FileAndLoc(file, loc);
+            Float[] loc = {(float) mCurrentLocation.getLatitude(), (float) mCurrentLocation.getLongitude()};
+            Float temp;
+            Float pressure;
+            if (thermometer.getSensorDataList().size() > 0 && barometer.getSensorDataList().size() > 0) {
+                temp = thermometer.getSensorDataList().get(thermometer.getSensorDataList().size() - 1);
+                pressure = barometer.getSensorDataList().get(barometer.getSensorDataList().size() - 1);
+            } else {
+                pressure = null;
+                temp = null;
+            }
+
+            FileAndSense fileAndLoc = new FileAndSense(file, loc, temp, pressure);
             images.add(fileAndLoc);
 
             @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
@@ -253,25 +287,33 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
                     .icon(icon);
 
             mMap.addMarker(markerOptions);
-            Log.d("MARK!", "Mark");
         }
     }
 
-    public static final class FileAndLoc {
-        private final float[] loc;
+    public static final class FileAndSense {
+        private final Float[] loc;
         private final File file;
+        private final Float temp;
+        private final Float pressure;
 
-        public FileAndLoc(File first, float[] second) {
+        public FileAndSense(File first, Float[] second, Float temp, Float pressure) {
             this.file = first;
             this.loc = second;
+            this.temp = temp;
+            this.pressure = pressure;
         }
 
-        public float[] getLoc() {
+        public Float[] getLoc() {
             return loc;
         }
-
         public File getFile() {
             return file;
+        }
+        public Float getTemp() {
+            return temp;
+        }
+        public Float getPressure() {
+            return pressure;
         }
     }
 }

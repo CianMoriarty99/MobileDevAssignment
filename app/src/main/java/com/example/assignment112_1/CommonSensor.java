@@ -15,18 +15,20 @@ import android.hardware.SensorManager;
 import android.os.SystemClock;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CommonSensor {
     private String TAG;
+    private List<Float> sensorDataList;
 
     private SensorEventListener mSensorListener = null;
     private SensorManager mSensorManager;
     private Sensor mSensor;
-    private Accelerometer accelerometer;
 
     private long mSamplingRateInMSecs;
     private long mSamplingRateNano;
-    private long SENSOR_READING_FREQUENCY = 20000;
-    private long STOPPING_THRESHOLD = 60000;
+    private long SENSOR_READING_FREQUENCY = 10000;
     private long timePhoneWasLastRebooted = 0;
     private long lastReportTime = 0;
     private boolean started;
@@ -38,6 +40,7 @@ public class CommonSensor {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(sensorType);
         this.TAG = TAG;
+        this.sensorDataList = new ArrayList<>();
         initSensorListener();
     }
 
@@ -55,11 +58,9 @@ public class CommonSensor {
                         // can be acceleration, temperature, or pressure for this use case
                         float sensorValue = event.values[0];
                         int accuracy = event.accuracy;
-                        Log.i(TAG, Utilities.mSecsToString(actualTimeInMseconds) + ": current sensor reading: " + sensorValue + " with accuracy: " + accuracy + "");
+                        Log.d(TAG, Utilities.mSecsToString(actualTimeInMseconds) + ": current sensor reading: " + sensorValue + " with accuracy: " + accuracy + "");
                         lastReportTime = event.timestamp;
-                        long timeLag = actualTimeInMseconds - accelerometer.getLastReportTime();
-                        if (timeLag > STOPPING_THRESHOLD)
-                            stopSensor();
+                        sensorDataList.add(sensorValue);
                     }
                 }
                 @Override
@@ -74,8 +75,7 @@ public class CommonSensor {
         return (mSensor != null);
     }
 
-    public void startSensing(Accelerometer accelerometer) {
-        this.accelerometer = accelerometer;
+    public void startSensing() {
         if (standardSensorAvailable()) {
             Log.d("Standard " + TAG + "", "starting listener");
             mSensorManager.registerListener(mSensorListener, mSensor, (int) (mSamplingRateInMSecs * 1000));
@@ -103,6 +103,10 @@ public class CommonSensor {
 
     public void setStarted(boolean started) {
         this.started = started;
+    }
+
+    public List<Float> getSensorDataList() {
+        return sensorDataList;
     }
 
 }

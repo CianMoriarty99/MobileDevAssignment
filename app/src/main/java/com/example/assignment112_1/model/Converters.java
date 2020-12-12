@@ -15,7 +15,7 @@ import java.util.List;
 
 public class Converters {
     @TypeConverter
-    public static String FloatArrayToString(float[] values) {
+    public static String FloatArrayToString(Float[] values) {
         JSONArray jsonArray = new JSONArray();
         for (float value : values) {
             try {
@@ -28,10 +28,10 @@ public class Converters {
     }
 
     @TypeConverter
-    public static float[] StringToFloatArray(String values) {
+    public static Float[] StringToFloatArray(String values) {
         try {
             JSONArray jsonArray = new JSONArray(values);
-            float[] floatArray = new float[jsonArray.length()];
+            Float[] floatArray = new Float[jsonArray.length()];
             for (int i = 0; i < jsonArray.length(); i++) {
                 floatArray[i] = Float.parseFloat(jsonArray.getString(i));
             }
@@ -45,24 +45,24 @@ public class Converters {
 
 
     @TypeConverter
-    public String fromVisitPointList(List<VisitPoint> countryLang) {
-        if (countryLang == null) {
+    public String fromVisitPointList(List<VisitPoint> visitPoints) {
+        if (visitPoints == null) {
             return (null);
         }
         Gson gson = new Gson();
         Type type = new TypeToken<List<VisitPoint>>() {}.getType();
-        String json = gson.toJson(countryLang, type);
+        String json = gson.toJson(visitPoints, type);
         return json;
     }
 
     @TypeConverter
-    public List<VisitPoint> toVisitPointList(String countryLangString) {
-        if (countryLangString == null) {
+    public List<VisitPoint> toVisitPointList(String string) {
+        if (string == null) {
             return (null);
         }
         Gson gson = new Gson();
         Type type = new TypeToken<List<VisitPoint>>() {}.getType();
-        return gson.fromJson(countryLangString, type);
+        return gson.fromJson(string, type);
     }
 
 

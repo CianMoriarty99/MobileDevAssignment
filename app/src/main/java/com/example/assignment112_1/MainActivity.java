@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos -> {
+            if (myPictureList.size() > 0) Log.d("PHOTODATA", myPictureList.get(0).getPressure().toString());
             myPictureList = photos;
             if (sortByDate) {
                 Collections.sort(myPictureList, (d1, d2) -> {
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
-            Log.d("NVISITS", visits.toString());
+            if (visits.size() > 0) Log.d("VISITDATA", visits.get(0).getPoints().get(0).getPressure().toString());
         });
 
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
@@ -427,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
         for (PhotoData data : myPictureList) {
-            if (data.getHasLoc()) {
+            if (data.getLoc()[0] != null) {
                 MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(data.getLoc()[0], data.getLoc()[1]))
                         .title(data.getPathTitle())
                         //TODO Show photo thumbnail?
