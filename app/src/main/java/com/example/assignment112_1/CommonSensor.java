@@ -58,7 +58,6 @@ public class CommonSensor {
                         // can be acceleration, temperature, or pressure for this use case
                         float sensorValue = event.values[0];
                         int accuracy = event.accuracy;
-                        Log.d(TAG, Utilities.mSecsToString(actualTimeInMseconds) + ": current sensor reading: " + sensorValue + " with accuracy: " + accuracy + "");
                         lastReportTime = event.timestamp;
                         sensorDataList.add(sensorValue);
                     }

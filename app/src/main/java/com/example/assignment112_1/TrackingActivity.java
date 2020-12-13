@@ -2,6 +2,11 @@ package com.example.assignment112_1;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -9,10 +14,12 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -20,12 +27,10 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.assignment112_1.model.PhotoViewModel;
 import com.example.assignment112_1.model.VisitData;
 import com.example.assignment112_1.model.VisitPoint;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -33,10 +38,12 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,18 +54,29 @@ import pl.aprilapps.easyphotopicker.EasyImage;
 
 public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private GoogleMap mMap;
+    private static GoogleMap mMap;
+    private static AppCompatActivity activity;
     private static final int ACCESS_FINE_LOCATION = 123;
-    private LocationRequest mLocationRequest;
-    private FusedLocationProviderClient mFusedLocationClient;
     private Button mButtonStop;
-    private List<VisitPoint> pointsList;
+    private static List<VisitPoint> pointsList;
     private PhotoViewModel model;
     private String title;
     private List<FileAndSense> images;
-    private CommonSensor barometer;
-    private CommonSensor thermometer;
+    private static CommonSensor barometer;
+    private static CommonSensor thermometer;
+    private static Location mCurrentLocation;
 
+    public static void setActivity(AppCompatActivity activity) { TrackingActivity.activity = activity; }
+    public static AppCompatActivity getActivity() { return activity; }
+    public static GoogleMap getMap() {
+        return mMap;
+    }
+    public static void setLocation(Location location) { TrackingActivity.mCurrentLocation = location; }
+    public static CommonSensor getBarometer() {return barometer;}
+    public static CommonSensor getThermometer() {return thermometer;}
+    public static void addToPointsList(VisitPoint point) {
+        pointsList.add(point);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +86,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        setActivity(this);
+        initLocations();
 
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
         pointsList = new ArrayList<>();
@@ -81,9 +101,6 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             Intent intent = new Intent();
             intent.putExtra("exampleName", "exampleValue");
             setResult(RESULT_OK, intent);
-            stopLocationUpdates();
-            barometer.stopSensor();
-            thermometer.stopSensor();
             finish();
         });
         mButtonStop.setEnabled(true);
@@ -92,64 +109,48 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         fab.setOnClickListener((view) -> {
             EasyImage.openCamera(TrackingActivity.this, 0);
         });
-
         barometer = new CommonSensor(this, Sensor.TYPE_PRESSURE, "Barometer");
         thermometer = new CommonSensor(this, Sensor.TYPE_AMBIENT_TEMPERATURE, "Thermometer");
+        barometer.startSensing();
+        thermometer.startSensing();
+
+        Intent serviceIntent = new Intent(getApplicationContext(),
+                LocationService.class);
+        startService(serviceIntent);
     }
 
-    private Location mCurrentLocation;
-    private String mLastUpdateTime;
-    LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            super.onLocationResult(locationResult);
-            mCurrentLocation = locationResult.getLastLocation();
-            mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            Log.d("MAP", "new location " + mCurrentLocation.toString());
-            LatLng loc = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            if (mMap != null)
-                mMap.addMarker(new MarkerOptions().position(loc)
-                        .title(mLastUpdateTime));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
-            float[] location = new float[]{(float) mCurrentLocation.getLatitude(), (float) mCurrentLocation.getLongitude()};
 
-            VisitPoint visitPoint;
-            if (thermometer.getSensorDataList().size() > 0 && barometer.getSensorDataList().size() > 0) {
-                float temp = thermometer.getSensorDataList().get(thermometer.getSensorDataList().size() - 1);
-                float pressure = barometer.getSensorDataList().get(barometer.getSensorDataList().size() - 1);
-                visitPoint = new VisitPoint(location, temp, pressure);
-            } else {
-                visitPoint = new VisitPoint(location, null, null);
-            }
-            pointsList.add(visitPoint);
-        }
-    };
-
-    private void startLocationUpdates() {
+    private void initLocations() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
+
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
+
             } else {
+
                 // No explanation needed, we can request the permission.
+
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         ACCESS_FINE_LOCATION);
+
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
                 // app-defined int constant. The callback method gets the
                 // result of the request.
             }
+
             return;
         }
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null /* Looper */);
     }
 
     private void stopLocationUpdates(){
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        //TODO stop service
     }
+
 
     private void saveVisit() {
         Date currentDateTime = new Date();
@@ -161,51 +162,11 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(20000);
-        mLocationRequest.setFastestInterval(10000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        barometer.startSensing();
-        thermometer.startSensing();
-        startLocationUpdates();
-    }
-    @Override
     protected void onStop() {
         super.onStop();
-        stopLocationUpdates();
-        barometer.stopSensor();
-        thermometer.stopSensor();
+        //stopLocationUpdates();
     }
 
-
-
-    @SuppressLint("MissingPermission")
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                    mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                            mLocationCallback, null /* Looper */);
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
 
     /**
      * Manipulates the map once available.
@@ -316,4 +277,5 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             return pressure;
         }
     }
+
 }
