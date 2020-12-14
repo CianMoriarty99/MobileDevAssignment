@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 2987;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 7829;
+    private static final int ACCESS_FINE_LOCATION = 123;
     private Activity activity;
     private PhotoViewModel model;
     private List<PhotoData> myPictureList;
@@ -287,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     }
 
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -326,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         }
     }
 
-    private void checkPermissions(final Context context) {
+    public void checkPermissions(final Context context) {
         int currentAPIVersion = Build.VERSION.SDK_INT;
         if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -369,8 +371,31 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                 }
 
             }
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Should we show an explanation?
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.ACCESS_FINE_LOCATION)) {
 
+                    // Show an explanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
 
+                } else {
+
+                    // No explanation needed, we can request the permission.
+
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            ACCESS_FINE_LOCATION);
+
+                    // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                    // app-defined int constant. The callback method gets the
+                    // result of the request.
+                }
+
+            }
+
+            return;
         }
     }
 
@@ -464,5 +489,5 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         }
 
-    }
+    }git
 }
