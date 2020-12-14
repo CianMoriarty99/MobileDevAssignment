@@ -33,6 +33,7 @@ public class CommonSensor {
     private long lastReportTime = 0;
     private boolean started;
 
+
     public CommonSensor(Context context, int sensorType, String TAG) {
         timePhoneWasLastRebooted = System.currentTimeMillis() - SystemClock.elapsedRealtime();
         mSamplingRateNano = (long) (SENSOR_READING_FREQUENCY) * 1000000;
@@ -59,7 +60,8 @@ public class CommonSensor {
                         float sensorValue = event.values[0];
                         int accuracy = event.accuracy;
                         lastReportTime = event.timestamp;
-                        sensorDataList.add(sensorValue);
+                        if (TAG.equals("Thermometer")) TrackingActivity.setTemperature(sensorValue);
+                        if (TAG.equals("Barometer")) TrackingActivity.setPressure(sensorValue);
                     }
                 }
                 @Override

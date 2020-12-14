@@ -10,7 +10,6 @@ import android.location.Location;
 import android.util.Log;
 
 import com.example.assignment112_1.model.VisitPoint;
-import com.google.android.gms.common.internal.service.Common;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -63,30 +62,19 @@ public class LocationIntentService extends IntentService {
                                     float[] locationArray = new float[]{(float) location.getLatitude(), (float) location.getLongitude()};
 
                                     VisitPoint visitPoint;
+                                    Float temp = TrackingActivity.getTemperature();
+                                    Float pressure = TrackingActivity.getPressure();
+                                    Log.e("LocationService", "Sensor readings "+temp+", "+pressure);
+                                    visitPoint = new VisitPoint(locationArray, temp, pressure);
 
-                                    CommonSensor thermometer = TrackingActivity.getThermometer();
-                                    CommonSensor barometer = TrackingActivity.getBarometer();
-                                    if (thermometer.getSensorDataList().size() > 0 && barometer.getSensorDataList().size() > 0) {
-                                        float temp = thermometer.getSensorDataList().get(thermometer.getSensorDataList().size() - 1);
-                                        float pressure = barometer.getSensorDataList().get(barometer.getSensorDataList().size() - 1);
-                                        Log.e("LocationService", "Sensor readings"+temp+"  "+pressure);
-                                        visitPoint = new VisitPoint(locationArray, temp, pressure);
-                                    } else {
-                                        visitPoint = new VisitPoint(locationArray, null, null);
-                                    }
                                     TrackingActivity.addToPointsList(visitPoint);
                                     if (TrackingActivity.getMap() != null)
-                                        Log.e("LocationSer  vice", "Marked on map");
+                                        Log.e("LocationService", "Marked on map");
                                         TrackingActivity.getMap().addMarker(new MarkerOptions().position(loc)
                                                 .title(DateFormat.getTimeInstance().format(new Date())));
+                                        // it centres the camera around the new location and zooms in
+                                        TrackingActivity.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
 
-
-
-                                    CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
-                                    // it centres the camera around the new location
-                                    TrackingActivity.getMap().moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
-                                    // it moves the camera to the selected zoom
-                                    TrackingActivity.getMap().animateCamera(zoom);
                                 } catch (Exception e ){
                                     Log.e("LocationService", "Error cannot write on map "+e.getMessage());
                                 }

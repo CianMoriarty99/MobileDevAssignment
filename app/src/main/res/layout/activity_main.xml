@@ -51,15 +51,21 @@
         app:srcCompat="@drawable/ic_baseline_my_location_24"
         android:visibility="gone"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_visit"
-        android:layout_width="wrap_content"
+
+    <Button
+        android:id="@+id/button_visit"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:clickable="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/fab_camera"
-        app:srcCompat="@drawable/ic_baseline_insert_photo_24" />
+        android:layout_gravity="center"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_weight="1"
+        android:text="Track Visit"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@+id/recycler_view"
+        app:layout_constraintEnd_toStartOf="@+id/fab_gallery"
+        app:layout_constraintStart_toEndOf="@+id/fab_camera" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_camera"

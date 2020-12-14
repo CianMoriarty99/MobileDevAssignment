@@ -84,6 +84,11 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //stop previous service.
+        Intent myService = new Intent(MainActivity.this, LocationService.class);
+        stopService(myService);
+
         setContentView(R.layout.activity_main);
         activity = this;
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
@@ -156,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
-            if (visits.size() > 0) Log.d("VISITDATA", visits.get(0).getPoints().get(0).getPressure().toString());
+            //DO something with visit data
         });
 
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
@@ -183,8 +188,8 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
             }
         });
 
-        FloatingActionButton fab_2 = (FloatingActionButton) findViewById(R.id.fab_visit);
-        fab_2.setOnClickListener(new View.OnClickListener() {
+        Button visit_but = findViewById(R.id.button_visit);
+        visit_but.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), VisitActivity.class);

@@ -6,6 +6,7 @@ package com.example.assignment112_1;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -45,6 +46,8 @@ public class LocationService extends Service {
     private PendingIntent mLocationPendingIntent;
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest mLocationRequest;
+    private static CommonSensor barometer;
+    private static CommonSensor thermometer;
 
 
     @Override
@@ -60,6 +63,11 @@ public class LocationService extends Service {
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         startLocationUpdates(getApplicationContext());
+
+        barometer = new CommonSensor(this, Sensor.TYPE_PRESSURE, "Barometer");
+        thermometer = new CommonSensor(this, Sensor.TYPE_AMBIENT_TEMPERATURE, "Thermometer");
+        barometer.startSensing();
+        thermometer.startSensing();
     }
 
 
@@ -103,6 +111,8 @@ public class LocationService extends Service {
         }
     }
 
+
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("Location Service", "Service started");
@@ -136,6 +146,14 @@ public class LocationService extends Service {
                 .setContentTitle("Location")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         return builder.build();
+    }
+
+    @Override
+    public void onDestroy() {
+        stopLocationUpdates();
+        barometer.stopSensor();
+        thermometer.stopSensor();
+        Log.e("Location", "Location service stopped");
     }
 }
 

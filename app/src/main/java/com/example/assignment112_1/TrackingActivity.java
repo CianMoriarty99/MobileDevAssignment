@@ -2,10 +2,6 @@ package com.example.assignment112_1;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,12 +10,11 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Button;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -27,10 +22,6 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.assignment112_1.model.PhotoViewModel;
 import com.example.assignment112_1.model.VisitData;
 import com.example.assignment112_1.model.VisitPoint;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -38,9 +29,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
@@ -62,9 +50,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private PhotoViewModel model;
     private String title;
     private List<FileAndSense> images;
-    private static CommonSensor barometer;
-    private static CommonSensor thermometer;
     private static Location mCurrentLocation;
+    private static Float mCurrentPressure, mCurrentTemperature;
+
 
     public static void setActivity(AppCompatActivity activity) { TrackingActivity.activity = activity; }
     public static AppCompatActivity getActivity() { return activity; }
@@ -72,8 +60,10 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         return mMap;
     }
     public static void setLocation(Location location) { TrackingActivity.mCurrentLocation = location; }
-    public static CommonSensor getBarometer() {return barometer;}
-    public static CommonSensor getThermometer() {return thermometer;}
+    public static Float getPressure() {return mCurrentPressure;}
+    public static void setPressure(float pressure) {mCurrentPressure = pressure; }
+    public static void setTemperature(float temp) {mCurrentTemperature = temp; }
+    public static Float getTemperature() {return mCurrentTemperature;}
     public static void addToPointsList(VisitPoint point) {
         pointsList.add(point);
     }
@@ -109,11 +99,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         fab.setOnClickListener((view) -> {
             EasyImage.openCamera(TrackingActivity.this, 0);
         });
-        barometer = new CommonSensor(this, Sensor.TYPE_PRESSURE, "Barometer");
-        thermometer = new CommonSensor(this, Sensor.TYPE_AMBIENT_TEMPERATURE, "Thermometer");
-        barometer.startSensing();
-        thermometer.startSensing();
 
+
+        mCurrentTemperature = mCurrentPressure = null;
         Intent serviceIntent = new Intent(getApplicationContext(),
                 LocationService.class);
         startService(serviceIntent);
@@ -147,8 +135,34 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted so restart location service:
+                    stopLocationUpdates();
+                    Intent serviceIntent = new Intent(getApplicationContext(),
+                            LocationService.class);
+                    startService(serviceIntent);
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
     private void stopLocationUpdates(){
-        //TODO stop service
+        Intent myService = new Intent(TrackingActivity.this, LocationService.class);
+        stopService(myService);
     }
 
 
@@ -164,6 +178,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     @Override
     protected void onStop() {
         super.onStop();
+        //Log.d("LocationService", "Stopping updates");
         //stopLocationUpdates();
     }
 
@@ -220,17 +235,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         for (File file : returnedPhotos) {
 
             Float[] loc = {(float) mCurrentLocation.getLatitude(), (float) mCurrentLocation.getLongitude()};
-            Float temp;
-            Float pressure;
-            if (thermometer.getSensorDataList().size() > 0 && barometer.getSensorDataList().size() > 0) {
-                temp = thermometer.getSensorDataList().get(thermometer.getSensorDataList().size() - 1);
-                pressure = barometer.getSensorDataList().get(barometer.getSensorDataList().size() - 1);
-            } else {
-                pressure = null;
-                temp = null;
-            }
 
-            FileAndSense fileAndLoc = new FileAndSense(file, loc, temp, pressure);
+            FileAndSense fileAndLoc = new FileAndSense(file, loc, mCurrentTemperature, mCurrentPressure);
             images.add(fileAndLoc);
 
             @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
