@@ -127,7 +127,14 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos -> {
-            if (myPictureList.size() > 0) Log.d("PHOTODATA", myPictureList.get(0).getPressure().toString());
+
+
+            try{
+                if (myPictureList.size() > 0) Log.d("PHOTODATA", myPictureList.get(0).getPressure().toString());
+            } catch (Exception e){
+                Log.d("PHOTODATA", "No pictures");
+            }
+
             myPictureList = photos;
             if (sortByDate) {
                 Collections.sort(myPictureList, (d1, d2) -> {
@@ -161,7 +168,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
-            //DO something with visit data
         });
 
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
@@ -406,16 +412,25 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private FusedLocationProviderClient mFusedLocationClient;
 
     public void getLocation() {
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        String locationProvider = LocationManager.NETWORK_PROVIDER;
-        @SuppressLint("MissingPermission") android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
-        LatLng loc = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-        if (mMap != null) {
-            if (currentMarker != null) currentMarker.remove();
-            currentMarker = mMap.addMarker(new MarkerOptions().position(loc)
-                    .title("Current Position"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+
+
+        try{
+
+            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            String locationProvider = LocationManager.NETWORK_PROVIDER;
+            @SuppressLint("MissingPermission") android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+            LatLng loc = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+            if (mMap != null) {
+                if (currentMarker != null) currentMarker.remove();
+                currentMarker = mMap.addMarker(new MarkerOptions().position(loc)
+                        .title("Current Position"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+            }
+
+        } catch (Exception e){
+            Log.d("GETLOCATION", "No location");
         }
+
     }
 
 
@@ -432,25 +447,36 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        for (PhotoData data : myPictureList) {
-            if (data.getLoc()[0] != null) {
-                MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(data.getLoc()[0], data.getLoc()[1]))
-                        .title(data.getPathTitle())
-                        //TODO Show photo thumbnail?
-                        .icon(icon);
+        
+        try{
 
-                Marker m =  mMap.addMarker(markerOptions);
-                m.setTag(data);
+            for (PhotoData data : myPictureList) {
+                if (data.getLoc()[0] != null) {
+                    MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(data.getLoc()[0], data.getLoc()[1]))
+                            .title(data.getPathTitle())
+                            //TODO Show photo thumbnail?
+                            .icon(icon);
+
+                    Marker m =  mMap.addMarker(markerOptions);
+                    m.setTag(data);
+                }
             }
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+                    PhotoData data = (PhotoData) marker.getTag();
+                    ShowDialogBox(data);
+                    return false;
+                }
+            });
+            
+            
+        }catch (Exception e){
+
+            Log.d("ONMAPREADY", "No photo data");
+
         }
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-               PhotoData data = (PhotoData) marker.getTag();
-               ShowDialogBox(data);
-               return false;
-            }
-        });
+
     }
 
     //TODO async task for showing images - move into service and use the same one for adaptor and this??
