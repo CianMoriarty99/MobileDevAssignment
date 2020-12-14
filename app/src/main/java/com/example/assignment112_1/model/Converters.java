@@ -16,15 +16,22 @@ import java.util.List;
 public class Converters {
     @TypeConverter
     public static String FloatArrayToString(Float[] values) {
-        JSONArray jsonArray = new JSONArray();
-        for (float value : values) {
-            try {
-                jsonArray.put(value);
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+        try {
+            JSONArray jsonArray = new JSONArray();
+            for (float value : values) {
+                try {
+                    jsonArray.put(value);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
+            return jsonArray.toString();
+
+        }catch (Exception e){
+            return null;
         }
-        return jsonArray.toString();
+
     }
 
     @TypeConverter
@@ -36,10 +43,11 @@ public class Converters {
                 floatArray[i] = Float.parseFloat(jsonArray.getString(i));
             }
             return floatArray;
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            return null;
+
         }
-        return null;
     }
 
 
