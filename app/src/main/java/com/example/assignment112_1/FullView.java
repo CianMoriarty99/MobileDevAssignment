@@ -17,26 +17,28 @@ import com.example.assignment112_1.model.PhotoData;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
 
     private static final int ACCESS_FINE_LOCATION = 123;
     private static GoogleMap mMap;
+    private static PhotoData img;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        img = getIntent().getExtras().getParcelable("img");
 
 
-        try {
-            setContentView(R.layout.activity_full_view);
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
-        } catch (Exception e) {
-            Log.d("FULLVIEWMAP", "No Map");
-        }
+        setContentView(R.layout.activity_full_view);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+
 
 
         ImageView imageView = findViewById(R.id.img_full);
@@ -46,10 +48,9 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
         TextView pressureText = findViewById(R.id.pressure);
 
 
-        PhotoData img = getIntent().getExtras().getParcelable("img");
         imageView.setImageBitmap(BitmapFactory.decodeFile(img.getPhotoFile()));
 
-        Log.d("FULLVIEWMAP", img.toString());
+
 
         try{
             if(img.getPathTitle() != null)
@@ -95,6 +96,24 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
+
+
+        try {
+            Float[] loc = img.getLoc();
+
+            MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(loc[0], loc[1]))
+                    .title("Test");
+            Log.d("FULLVIEWMAP", markerOptions.toString());
+
+
+
+            mMap.addMarker(markerOptions);
+        }catch (Exception e){
+            Log.d("FULLVIEWMAP", "No location");
+
+        }
+
+
     }
 
 
