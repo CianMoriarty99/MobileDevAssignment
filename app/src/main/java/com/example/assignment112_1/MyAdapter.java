@@ -45,7 +45,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder>  {
         if (holder != null && items.get(position) != null) {
             if (items.get(position).getThumbFile() != null) {
                 File file = new File(items.get(position).getPhotoFile());
-                new UploadSingleImageTask().execute(new FileAndHolder(file, holder));
+                new ImageHelper.ShowSingleImageTask().execute(new ImageHelper.FileAndView(file, holder.imageView));
             }
         }
         //animate(holder);
@@ -90,29 +90,5 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder>  {
 
     public void setItems(List<PhotoData> items) {
         this.items = items;
-    }
-
-    //TODO move into service
-    private static class UploadSingleImageTask extends  AsyncTask<FileAndHolder, Void, Bitmap> {
-        FileAndHolder fileAndHolder;
-
-        @Override
-        protected Bitmap doInBackground(FileAndHolder... fileAndHolders) {
-            fileAndHolder= fileAndHolders[0];
-            return BitmapFactory.decodeFile(fileAndHolder.file.getAbsolutePath());
-        }
-        @Override
-        protected void onPostExecute (Bitmap bitmap){
-            fileAndHolder.holder.imageView.setImageBitmap(bitmap);
-        }
-    }
-
-    private class FileAndHolder{
-        File file;
-        View_Holder holder;
-        public FileAndHolder(File file, View_Holder holder) {
-            this.file = file;
-            this.holder = holder;
-        }
     }
 }

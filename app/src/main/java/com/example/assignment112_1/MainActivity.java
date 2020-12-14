@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private MyAdapter mAdapter;
     public static boolean sortByDate, sortByPath, listViewBool, mapBool;
     private GoogleMap mMap;
-    Marker currentMarker;
 
 
     @Override
@@ -107,8 +106,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         mAdapter = new MyAdapter(myPictureList, this);
         mRecyclerView.setAdapter(mAdapter);
 
-        FloatingActionButton fabCentre = findViewById(R.id.fab_centre);
-
         if (listViewBool) {
             mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
         } else {
@@ -117,24 +114,14 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         if (mapBool) {
             mapFragment.getView().setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.INVISIBLE);
-            fabCentre.setVisibility(View.VISIBLE);
 
         } else {
             mRecyclerView.setVisibility(View.VISIBLE);
             mapFragment.getView().setVisibility(View.INVISIBLE);
-            fabCentre.setVisibility(View.INVISIBLE);
         }
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos -> {
-
-
-            try{
-                if (myPictureList.size() > 0) Log.d("PHOTODATA", myPictureList.get(0).getPressure().toString());
-            } catch (Exception e){
-                Log.d("PHOTODATA", "No pictures");
-            }
-
             myPictureList = photos;
             if (sortByDate) {
                 Collections.sort(myPictureList, (d1, d2) -> {
@@ -179,13 +166,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         });
 
 
-        fabCentre.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getLocation();
-            }
-        });
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_camera);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -222,15 +202,14 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         Button btn_Close = dialog.findViewById(R.id.btn_close);
         Button btn_Save = dialog.findViewById(R.id.btn_save);
 
-        //TODO change to path title - don't show if image is part of path?
         String title = imageData.getPathTitle();
 
         Image_name.setText(title);
 
         descriptionView.setText(imageData.getDescription());
 
-        //TODO use async task?
-        imageView.setImageBitmap(BitmapFactory.decodeFile(imageData.getPhotoFile()));
+
+        new ImageHelper.ShowSingleImageTask().execute(new ImageHelper.FileAndView(new File(imageData.getPhotoFile()), imageView));
 
         btn_Save.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -408,45 +387,53 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         return activity;
     }
 
-    private LocationRequest mLocationRequest;
-    private FusedLocationProviderClient mFusedLocationClient;
+    private void initLocations() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-    public void getLocation() {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
 
+            } else {
 
-        try{
+                // No explanation needed, we can request the permission.
 
-            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-            String locationProvider = LocationManager.NETWORK_PROVIDER;
-            @SuppressLint("MissingPermission") android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
-            LatLng loc = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-            if (mMap != null) {
-                if (currentMarker != null) currentMarker.remove();
-                currentMarker = mMap.addMarker(new MarkerOptions().position(loc)
-                        .title("Current Position"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        123);
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        123);
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
             }
 
-        } catch (Exception e){
-            Log.d("GETLOCATION", "No location");
+            return;
         }
-
     }
 
-
-
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
         Canvas canvas = new Canvas();
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(25, 42, Bitmap.Config.ARGB_8888);
         canvas.setBitmap(bitmap);
-        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        drawable.setBounds(0, 0, 25, 42);
         drawable.draw(canvas);
         BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
 
+
+        initLocations();
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.setMyLocationEnabled(true);
+
         
         try{
 
@@ -478,28 +465,4 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         }
 
     }
-
-    //TODO async task for showing images - move into service and use the same one for adaptor and this??
-    private static class ShowSingleImageTask extends AsyncTask<FileAndView, Void, Bitmap> {
-        FileAndView fileAndView;
-
-        @Override
-        protected Bitmap doInBackground(FileAndView... fileAndViews) {
-            fileAndView= fileAndViews[0];
-            return BitmapFactory.decodeFile(fileAndView.file.getAbsolutePath());
-        }
-        @Override
-        protected void onPostExecute (Bitmap bitmap){
-            fileAndView.image.setImageBitmap(bitmap);
-        }
-    }
-    private class FileAndView {
-        File file;
-        ImageView image;
-        public FileAndView(File file, ImageView image) {
-            this.file = file;
-            this.image = image;
-        }
-    }
-
 }

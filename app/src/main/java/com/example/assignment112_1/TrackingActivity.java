@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
@@ -39,12 +40,15 @@ import java.util.List;
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
 
+import static com.example.assignment112_1.BitmapHelper.calculateInSampleSize;
+
 
 public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static GoogleMap mMap;
     private static AppCompatActivity activity;
     private static final int ACCESS_FINE_LOCATION = 123;
+    private static final int ACCESS_COARSE_LOCATION = 123;
     private Button mButtonStop;
     private static List<VisitPoint> pointsList;
     private PhotoViewModel model;
@@ -54,18 +58,44 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private static Float mCurrentPressure, mCurrentTemperature;
 
 
-    public static void setActivity(AppCompatActivity activity) { TrackingActivity.activity = activity; }
-    public static AppCompatActivity getActivity() { return activity; }
+    public static void setActivity(AppCompatActivity activity) {
+        TrackingActivity.activity = activity;
+    }
+
+    public static AppCompatActivity getActivity() {
+        return activity;
+    }
+
     public static GoogleMap getMap() {
         return mMap;
     }
-    public static void setLocation(Location location) { TrackingActivity.mCurrentLocation = location; }
-    public static Float getPressure() {return mCurrentPressure;}
-    public static void setPressure(float pressure) {mCurrentPressure = pressure; }
-    public static void setTemperature(float temp) {mCurrentTemperature = temp; }
-    public static Float getTemperature() {return mCurrentTemperature;}
+
+    public static void setLocation(Location location) {
+        TrackingActivity.mCurrentLocation = location;
+    }
+
+    public static Float getPressure() {
+        return mCurrentPressure;
+    }
+
+    public static void setPressure(float pressure) {
+        mCurrentPressure = pressure;
+    }
+
+    public static void setTemperature(float temp) {
+        mCurrentTemperature = temp;
+    }
+
+    public static Float getTemperature() {
+        return mCurrentTemperature;
+    }
+
     public static void addToPointsList(VisitPoint point) {
         pointsList.add(point);
+    }
+
+    public static List<VisitPoint> getPointsList() {
+        return pointsList;
     }
 
     @Override
@@ -81,7 +111,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
         pointsList = new ArrayList<>();
-        images =  new ArrayList<>();
+        images = new ArrayList<>();
         title = getIntent().getStringExtra("Title");
 
         mButtonStop = (Button) findViewById(R.id.button_stop);
@@ -126,6 +156,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         ACCESS_FINE_LOCATION);
 
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        ACCESS_COARSE_LOCATION);
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
                 // app-defined int constant. The callback method gets the
                 // result of the request.
@@ -160,7 +193,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
-    private void stopLocationUpdates(){
+    private void stopLocationUpdates() {
         Intent myService = new Intent(TrackingActivity.this, LocationService.class);
         stopService(myService);
     }
@@ -192,10 +225,12 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.setMyLocationEnabled(true);
     }
 
 
@@ -239,19 +274,36 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             FileAndSense fileAndLoc = new FileAndSense(file, loc, mCurrentTemperature, mCurrentPressure);
             images.add(fileAndLoc);
 
+
+            BitmapDescriptor icon = null;
+
+           /* try {
+                final BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                // Calculate inSampleSize
+                options.inSampleSize = calculateInSampleSize(options, 1, 1);
+                // Decode bitmap with inSampleSize set
+                options.inJustDecodeBounds = false;
+                Bitmap finalBit = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+                icon = BitmapDescriptorFactory.fromBitmap(finalBit);
+                */
+
+
             @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
+            drawable.setAlpha(255);
             Canvas canvas = new Canvas();
             Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
             canvas.setBitmap(bitmap);
             drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
             drawable.draw(canvas);
-            BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
-
+            icon = BitmapDescriptorFactory.fromBitmap(bitmap);
 
             MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
                     .title("Photo")
                     //TODO Show photo thumbnail?
+                    .alpha(1.0f)
                     .icon(icon);
+
 
             mMap.addMarker(markerOptions);
         }
