@@ -28,7 +28,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".FullView"
+            android:name=".ViewImageData"
+            android:theme="@style/fullViewTheme" />
+
+        <activity
+            android:name=".ViewVisitData"
             android:theme="@style/fullViewTheme" />
         <activity
             android:name=".VisitActivity" />
