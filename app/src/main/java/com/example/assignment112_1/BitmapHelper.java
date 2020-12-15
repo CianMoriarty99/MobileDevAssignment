@@ -21,7 +21,6 @@ public class BitmapHelper {
         Log.d("FILEPATH", filePath);
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, options);
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
         // Decode bitmap with inSampleSize set

@@ -6,6 +6,7 @@ package com.example.assignment112_1;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.util.Log;
 
@@ -15,6 +16,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -73,7 +75,21 @@ public class LocationIntentService extends IntentService {
                                         TrackingActivity.getMap().addMarker(new MarkerOptions().position(loc)
                                                 .title(DateFormat.getTimeInstance().format(new Date())));
                                         // it centres the camera around the new location and zooms in
-                                        TrackingActivity.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+                                        TrackingActivity.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 18.0f));
+
+                                        //Draws the route
+                                        List<VisitPoint> pointsList = TrackingActivity.getPointsList();
+                                        ArrayList<LatLng> points = new ArrayList<>();
+                                        for (VisitPoint point : pointsList) {
+                                            points.add(new LatLng(point.getLocation()[0], point.getLocation()[1]));
+                                        }
+
+                                        //Add path between points
+                                        PolylineOptions lineOptions= new PolylineOptions()
+                                            .addAll(points)
+                                            .width(5)
+                                            .color(Color.RED);
+                                        TrackingActivity.getMap().addPolyline(lineOptions);
 
                                 } catch (Exception e ){
                                     Log.e("LocationService", "Error cannot write on map "+e.getMessage());
