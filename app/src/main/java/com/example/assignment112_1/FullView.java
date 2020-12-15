@@ -148,20 +148,42 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
 
+        for (VisitData data : pointData) {
+
+            String dt = data.getTitle();
+            String pt = photoData.getPathTitle();
+
+            if (dt.equals(pt)) {
+
+                for (VisitPoint p : data.getPoints()) {
+
+                    float[] loc = p.getLocation();
+                    LatLng latLngLoc = new LatLng(loc[0], loc[1]);
+                    Log.d("latlng", latLngLoc.toString());
+                    locsList.add(latLngLoc);
+
+                    if(p.getLocation() != photoData.getLoc()){
+
+                        MarkerOptions markerOptions = new MarkerOptions().position(latLngLoc)
+                                .title(photoData.getPathTitle())
+                                .icon(BitmapDescriptorFactory
+                                        .defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+                        mMap.addMarker(markerOptions);
+
+                    }
+                }
+            }
+        }
+
         try {
-
-
 
             float[] location = photoData.getLoc();
             LatLng loc = new LatLng(location[0], location[1]);
             MarkerOptions markerOptions = new MarkerOptions().position(loc)
-                    .title("Test")
+                    .title(photoData.getPathTitle())
                     .icon(BitmapDescriptorFactory
-                    .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-
-            Log.d("FULLVIEWMAP", markerOptions.toString());
-
-
+                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 
             mMap.addMarker(markerOptions);
 
@@ -172,39 +194,6 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
         }
 
-
-        for (VisitData data : pointData) {
-            Log.d("VisitData", data.getTitle());
-            Log.d("photoData", photoData.getPathTitle());
-
-            if(data.getTitle() == photoData.getPathTitle()){
-
-                for (VisitPoint p : data.getPoints()){
-
-                    Log.d("VisitPoint", p.toString());
-
-                    Float[] loc = p.getLocation();
-                    LatLng latLngLoc = new LatLng(loc[0], loc[1]);
-                    Log.d("latlng", latLngLoc.toString());
-                    locsList.add(latLngLoc);
-                    MarkerOptions markerOptions = new MarkerOptions().position(latLngLoc)
-                            .title("Test")
-                            .icon(BitmapDescriptorFactory
-                                .defaultMarker(BitmapDescriptorFactory.HUE_RED));
-
-                    mMap.addMarker(markerOptions);
-
-
-                }
-
-
-
-
-            }
-
-
-        }
-        Log.d("locslist", locsList.toString());
         //Add path between points
         PolylineOptions lineOptions = new PolylineOptions()
                 .addAll(locsList)
