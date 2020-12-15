@@ -39,9 +39,7 @@ public class VisitAdapter extends RecyclerView.Adapter<VisitAdapter.View_Holder>
 
         //Use the provided View Holder on the onCreateViewHolder method to populate the
         // current row on the RecyclerView
-        Log.e("VISITS?", "Here!");
         if (holder != null && visits.get(position) != null) {
-            Log.e("VISITS?", "Here!!");
             String title = visits.get(position).getTitle();
             holder.titleView.setText(title);
         }

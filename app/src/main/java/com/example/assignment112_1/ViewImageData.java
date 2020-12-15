@@ -1,13 +1,8 @@
 package com.example.assignment112_1;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -31,14 +26,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
  * This class provides a display for one full image at a time.
  */
 
-public class FullView extends AppCompatActivity implements OnMapReadyCallback {
+public class ViewImageData extends AppCompatActivity implements OnMapReadyCallback {
 
     private static GoogleMap mMap;
     private static List<VisitData> pointData;
@@ -55,9 +49,9 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
         photoData = getIntent().getExtras().getParcelable("img");
 
 
-        setContentView(R.layout.activity_full_view);
+        setContentView(R.layout.activity_view_image);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.fragment_visit_map);
         mapFragment.getMapAsync(this);
 
 

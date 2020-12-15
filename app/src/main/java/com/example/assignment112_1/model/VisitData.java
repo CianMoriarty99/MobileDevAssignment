@@ -1,5 +1,8 @@
 package com.example.assignment112_1.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -22,7 +25,6 @@ public class VisitData {
     @ColumnInfo(name="title")
     private String title;
     private Date dateTime;
-    //private PhotoData[] images;
     private List<VisitPoint> points;
 
     public VisitData(String title, Date dateTime, List<VisitPoint> points) {
@@ -30,6 +32,7 @@ public class VisitData {
         this.dateTime = dateTime;
         this.points = points;
     }
+
     public String getTitle() {
         return title;
     }
@@ -50,6 +53,7 @@ public class VisitData {
     public void setDateTime(Date date) {
         this.dateTime = date;
     }
+
 }
 
 

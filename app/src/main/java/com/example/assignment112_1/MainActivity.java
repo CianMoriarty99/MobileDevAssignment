@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -34,7 +33,6 @@ import com.example.assignment112_1.model.PhotoData;
 import com.example.assignment112_1.model.PhotoViewModel;
 import com.example.assignment112_1.model.VisitData;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.dynamic.SupportFragmentWrapper;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -193,7 +191,6 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             myVisitList = visits;
             mVisitAdapter.setVisits(visits);
             mVisitAdapter.notifyDataSetChanged();
-
         });
 
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
@@ -246,14 +243,17 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
     @Override
     public void onImageClick(int position) {
         PhotoData imageData = myPictureList.get(position);
-        Intent i = new Intent(MainActivity.this, FullView.class);
+        Intent i = new Intent(MainActivity.this, ViewImageData.class);
         i.putExtra("img", imageData);
         startActivity(i);
     }
 
     @Override
     public void onVisitClick(int position) {
-
+        VisitData visitData = myVisitList.get(position);
+        Intent i = new Intent(MainActivity.this, ViewVisitData.class);
+        i.putExtra("visit", visitData.getTitle());
+        startActivity(i);
     }
 
 
@@ -525,7 +525,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                 @Override
                 public boolean onMarkerClick(Marker marker) {
                     PhotoData imageData = (PhotoData) marker.getTag();
-                    Intent i = new Intent(MainActivity.this, FullView.class);
+                    Intent i = new Intent(MainActivity.this, ViewImageData.class);
                     i.putExtra("img", imageData);
                     startActivity(i);
                     return false;
