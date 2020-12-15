@@ -109,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         mAdapter = new MyAdapter(myPictureList, this);
         mRecyclerView.setAdapter(mAdapter);
 
-        FloatingActionButton fabCentre = findViewById(R.id.fab_centre);
 
         if (listViewBool) {
             mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
@@ -119,12 +118,10 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         if (mapBool) {
             mapFragment.getView().setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.INVISIBLE);
-            fabCentre.setVisibility(View.VISIBLE);
 
         } else {
             mRecyclerView.setVisibility(View.VISIBLE);
             mapFragment.getView().setVisibility(View.INVISIBLE);
-            fabCentre.setVisibility(View.INVISIBLE);
         }
 
         //Retrieve and observe photo data in U.I
@@ -182,12 +179,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         });
 
 
-        fabCentre.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getLocation();
-            }
-        });
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_camera);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -210,62 +201,11 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     @Override
     public void onImageClick(int position) {
         PhotoData imageData = myPictureList.get(position);
-        ShowDialogBox(imageData);
-    }
-
-    public void ShowDialogBox(final PhotoData imageData) {
-        final Dialog dialog = new Dialog(this);
-
-        dialog.setContentView(R.layout.custom_dialog);
-
-        //Getting custom dialog views
-        TextView Image_name = dialog.findViewById(R.id.txt_image_title);
-        ImageView imageView = dialog.findViewById(R.id.img);
-        EditText descriptionView = dialog.findViewById(R.id.txt_image_desc);
-        Button btn_Close = dialog.findViewById(R.id.btn_close);
-        Button btn_Save = dialog.findViewById(R.id.btn_save);
-
-        //TODO change to path title - don't show if image is part of path?
-        String title = imageData.getPathTitle();
-
-        Image_name.setText(title);
-
-        descriptionView.setText(imageData.getDescription());
-
-        //TODO use async task?
-        imageView.setImageBitmap(BitmapFactory.decodeFile(imageData.getPhotoFile()));
-
-        btn_Save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String description = descriptionView.getText().toString();
-                imageData.setDescription(description);
-                model.updatePhotoData(imageData);
-                dialog.dismiss();
-            }
-        });
-
-        btn_Close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, FullView.class);
-                i.putExtra("img", imageData);
-                startActivity(i);
-            }
-        });
-
-        dialog.show();
         Intent i = new Intent(MainActivity.this, FullView.class);
         i.putExtra("img", imageData);
         startActivity(i);
     }
+
 
 
     @Override
@@ -566,5 +506,5 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         }
     }
 
-    }
+
 }

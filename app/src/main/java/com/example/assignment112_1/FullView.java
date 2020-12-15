@@ -2,6 +2,7 @@ package com.example.assignment112_1;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -11,12 +12,16 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.assignment112_1.model.PhotoData;
+import com.example.assignment112_1.model.PhotoViewModel;
 import com.example.assignment112_1.model.VisitData;
 import com.example.assignment112_1.model.VisitPoint;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -34,16 +39,15 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int ACCESS_FINE_LOCATION = 123;
     private static GoogleMap mMap;
-    private static PhotoData img;
     private static List<VisitData> pointData;
     private PhotoData photoData;
     private PhotoViewModel model;
     private EditText descriptionText;
+    private List<LatLng> locsList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        img = getIntent().getExtras().getParcelable("img");
         pointData = MainActivity.mVisitList;
         model = new ViewModelProvider(this,ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
         photoData = getIntent().getExtras().getParcelable("img");
@@ -141,16 +145,16 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
 
         try {
-            Float[] loc = img.getLoc();
 
-            MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(loc[0], loc[1]))
-                    .title("Test")
-                    .icon(BitmapDescriptorFactory
-                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+
+
             float[] location = photoData.getLoc();
             LatLng loc = new LatLng(location[0], location[1]);
             MarkerOptions markerOptions = new MarkerOptions().position(loc)
-                    .title("Test");
+                    .title("Test")
+                    .icon(BitmapDescriptorFactory
+                    .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+
             Log.d("FULLVIEWMAP", markerOptions.toString());
 
 
@@ -164,17 +168,20 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
         }
 
-        List<LatLng> locsList = new ArrayList<>();
+
         for (VisitData data : pointData) {
+            Log.d("VisitData", data.getTitle());
+            Log.d("photoData", photoData.getPathTitle());
 
-
-            if(data.getTitle() == img.getPathTitle()){
-
+            if(data.getTitle() == photoData.getPathTitle()){
 
                 for (VisitPoint p : data.getPoints()){
 
+                    Log.d("VisitPoint", p.toString());
+
                     Float[] loc = p.getLocation();
                     LatLng latLngLoc = new LatLng(loc[0], loc[1]);
+                    Log.d("latlng", latLngLoc.toString());
                     locsList.add(latLngLoc);
                     MarkerOptions markerOptions = new MarkerOptions().position(latLngLoc)
                             .title("Test")
@@ -187,19 +194,20 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
                 }
 
 
-                //Add path between points
-                PolylineOptions lineOptions = new PolylineOptions()
-                        .addAll(locsList)
-                        .width(5)
-                        .color(Color.RED);
-                mMap.addPolyline(lineOptions);
-
 
 
             }
 
 
         }
+        Log.d("locslist", locsList.toString());
+        //Add path between points
+        PolylineOptions lineOptions = new PolylineOptions()
+                .addAll(locsList)
+                .width(5)
+                .color(Color.RED);
+        mMap.addPolyline(lineOptions);
+
 
 
     }
