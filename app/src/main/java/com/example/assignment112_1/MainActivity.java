@@ -2,9 +2,10 @@ package com.example.assignment112_1;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.LiveData;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,18 +16,13 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,18 +30,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-
 import com.example.assignment112_1.model.PhotoData;
 import com.example.assignment112_1.model.PhotoViewModel;
 import com.example.assignment112_1.model.VisitData;
-import com.example.assignment112_1.model.VisitPoint;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.dynamic.SupportFragmentWrapper;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -62,22 +51,16 @@ import com.google.android.libraries.places.widget.listener.PlaceSelectionListene
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
-import java.lang.reflect.Array;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
 
-import android.app.Dialog;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
+
 
 /**
  * This class is the starting point of the application. It contains the main gallery display as well
@@ -85,7 +68,7 @@ import android.widget.TextView;
  * the user to take photos without recording their visit.
  */
 
-public class MainActivity extends AppCompatActivity implements MyAdapter.ImageListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements ImageAdapter.ImageListener, OnMapReadyCallback, VisitAdapter.VisitListener {
 
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 2987;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 7829;
@@ -94,10 +77,12 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private Activity activity;
     private PhotoViewModel model;
     private List<PhotoData> myPictureList;
-    private MyAdapter mAdapter;
+    private List<VisitData> myVisitList;
+    private ImageAdapter mImageAdapter;
+    private VisitAdapter mVisitAdapter;
+    private RecyclerView mVisitRecyclerView, mImageRecyclerView;
     public static boolean sortByDate, sortByPath, listViewBool, mapBool;
     private GoogleMap mMap;
-    Marker currentMarker;
     public static List<VisitData> mVisitList;
 
 
@@ -117,26 +102,50 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                 .findFragmentById(R.id.map_frag);
         mapFragment.getMapAsync(this);
 
-        RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
+        mImageRecyclerView = findViewById(R.id.recycler_view);
         // set up the RecyclerView
         myPictureList = new ArrayList<>();
-        mAdapter = new MyAdapter(myPictureList, this);
-        mRecyclerView.setAdapter(mAdapter);
+        mImageAdapter = new ImageAdapter(myPictureList, this);
+        mImageRecyclerView.setAdapter(mImageAdapter);
+        mImageRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
 
+        mVisitRecyclerView = findViewById(R.id.visit_recycler_view);
+        myVisitList = new ArrayList<>();
+        mVisitAdapter = new VisitAdapter(myVisitList, this);
+        mVisitRecyclerView.setAdapter(mVisitAdapter);
+        mVisitRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Initialize the SDK
+        Places.initialize(getApplicationContext(), "AIzaSyDK0ehr4Dp0f5o9Pfc9sFm7y0Gu1mBlNFY");
+
+        // Create a new Places client instance
+        PlacesClient placesClient = Places.createClient(this);
+
+        // Initialize the AutocompleteSupportFragment.
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+        // Specify the types of place data to return.
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+
+        CardView cardView = findViewById(R.id.card_view);
 
         if (listViewBool) {
-            mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+            mImageRecyclerView.setVisibility(View.VISIBLE);
+            mVisitRecyclerView.setVisibility(View.INVISIBLE);
         } else {
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            mVisitRecyclerView.setVisibility(View.VISIBLE);
+            mImageRecyclerView.setVisibility(View.INVISIBLE);
         }
         if (mapBool) {
+            cardView.setVisibility(View.VISIBLE);
             mapFragment.getView().setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.INVISIBLE);
-
+            mImageRecyclerView.setVisibility(View.INVISIBLE);
+            mVisitRecyclerView.setVisibility(View.INVISIBLE);
         } else {
-            mRecyclerView.setVisibility(View.VISIBLE);
+            cardView.setVisibility(View.INVISIBLE);
             mapFragment.getView().setVisibility(View.INVISIBLE);
         }
+
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos -> {
@@ -174,14 +183,17 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                     }
                 });
             }
-            mAdapter.setItems(photos);
-            mAdapter.notifyDataSetChanged();
+            mImageAdapter.setImages(photos);
+            mImageAdapter.notifyDataSetChanged();
         });
 
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
-            mVisitList = visits;
+            myVisitList = visits;
+            mVisitAdapter.setVisits(visits);
+            mVisitAdapter.notifyDataSetChanged();
+
         });
 
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
@@ -211,18 +223,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
             }
         });
 
-        // Initialize the SDK
-        Places.initialize(getApplicationContext(), "AIzaSyCJ97ya3k69cM_Dkp0rd8ZiF4hY1ubKxHw");
-
-        // Create a new Places client instance
-        PlacesClient placesClient = Places.createClient(this);
-
-        // Initialize the AutocompleteSupportFragment.
-        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
-                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-
-        // Specify the types of place data to return.
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
 
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -249,6 +249,11 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         Intent i = new Intent(MainActivity.this, FullView.class);
         i.putExtra("img", imageData);
         startActivity(i);
+    }
+
+    @Override
+    public void onVisitClick(int position) {
+
     }
 
 
@@ -535,30 +540,4 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         }
 
     }
-
-
-    //TODO async task for showing images - move into service and use the same one for adaptor and this??
-    private static class ShowSingleImageTask extends AsyncTask<FileAndView, Void, Bitmap> {
-        FileAndView fileAndView;
-
-        @Override
-        protected Bitmap doInBackground(FileAndView... fileAndViews) {
-            fileAndView= fileAndViews[0];
-            return BitmapFactory.decodeFile(fileAndView.file.getAbsolutePath());
-        }
-        @Override
-        protected void onPostExecute (Bitmap bitmap){
-            fileAndView.image.setImageBitmap(bitmap);
-        }
-    }
-    private class FileAndView {
-        File file;
-        ImageView image;
-        public FileAndView(File file, ImageView image) {
-            this.file = file;
-            this.image = image;
-        }
-    }
-
-
 }

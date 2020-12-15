@@ -40,7 +40,6 @@ import java.util.List;
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
 
-import static com.example.assignment112_1.BitmapHelper.calculateInSampleSize;
 
 /**
  * This class provides the actual data tracking functionality that is needed to collect and record

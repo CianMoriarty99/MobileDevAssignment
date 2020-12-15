@@ -1,10 +1,6 @@
 
 package com.example.assignment112_1;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.assignment112_1.model.PhotoData;
+import com.example.assignment112_1.model.VisitData;
 
 import java.io.File;
 import java.util.List;
@@ -23,12 +20,12 @@ import java.util.List;
  * gallery format.
  */
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder>  {
-    private List<PhotoData> items;
+public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.View_Holder>  {
+    private List<PhotoData> images;
     private final ImageListener mImageListener;
 
-    public MyAdapter(List<PhotoData> items, ImageListener mImageListener) {
-        this.items = items;
+    public ImageAdapter(List<PhotoData> images, ImageListener mImageListener) {
+        this.images = images;
         this.mImageListener = mImageListener;
     }
 
@@ -37,8 +34,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder>  {
     @Override
     public View_Holder onCreateViewHolder(ViewGroup parent, int viewType) {
         //Inflate the layout, initialize the View Holder
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_image,
-                parent, false);
+        View v= LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_image,
+                    parent, false);
+
         return new View_Holder(v, mImageListener);
     }
 
@@ -47,11 +45,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder>  {
 
         //Use the provided View Holder on the onCreateViewHolder method to populate the
         // current row on the RecyclerView
-        if (holder != null && items.get(position) != null) {
-            if (items.get(position).getThumbFile() != null) {
-                File file = new File(items.get(position).getPhotoFile());
-                new ImageHelper.ShowSingleImageTask().execute(new ImageHelper.FileAndView(file, holder.imageView));
-            }
+        if (holder != null && images.get(position) != null) {
+            File file = new File(images.get(position).getThumbFile());
+            new ImageHelper.ShowSingleImageTask().execute(new ImageHelper.FileAndView(file, holder.imageView));
         }
         //animate(holder);
     }
@@ -59,12 +55,12 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder>  {
 
     // convenience method for getting data at click position
     PhotoData getItem(int id) {
-        return items.get(id);
+        return images.get(id);
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return images.size();
     }
 
 
@@ -89,11 +85,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.View_Holder>  {
         }
     }
 
-    public List<PhotoData> getItems() {
-        return items;
+    public List<PhotoData> getImages() {
+        return images;
     }
 
-    public void setItems(List<PhotoData> items) {
-        this.items = items;
+    public void setImages(List<PhotoData> images) {
+        this.images = images;
     }
 }

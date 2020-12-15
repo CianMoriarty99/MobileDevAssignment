@@ -40,8 +40,6 @@ import java.util.List;
 
 public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
-
-    private static final int ACCESS_FINE_LOCATION = 123;
     private static GoogleMap mMap;
     private static List<VisitData> pointData;
     private PhotoData photoData;
