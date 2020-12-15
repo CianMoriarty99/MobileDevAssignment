@@ -8,20 +8,20 @@ import java.util.Date;
 import java.util.List;
 
 public class VisitPoint {
-    private float[] location;
+    private Float[] location;
     private Float pressure;
     private Float temperature;
 
-    public VisitPoint(float[] location, Float temperature, Float pressure) {
+    public VisitPoint(Float[] location, Float temperature, Float pressure) {
         this.location = location;
         this.pressure = pressure;
         this.temperature = temperature;
     }
 
-    public float[] getLocation() {
+    public Float[] getLocation() {
         return location;
     }
-    public void setLocation(float[] location) {
+    public void setLocation(Float[] location) {
         this.location= location;
     }
 

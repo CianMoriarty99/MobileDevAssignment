@@ -3,6 +3,7 @@ package com.example.assignment112_1;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,6 +36,7 @@ import android.view.View;
 
 import com.example.assignment112_1.model.PhotoData;
 import com.example.assignment112_1.model.PhotoViewModel;
+import com.example.assignment112_1.model.VisitData;
 import com.example.assignment112_1.model.VisitPoint;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -53,6 +55,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     public static boolean sortByDate, sortByPath, listViewBool, mapBool;
     private GoogleMap mMap;
     Marker currentMarker;
+    public static List<VisitData> mVisitList;
 
 
     @Override
@@ -169,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
+            mVisitList = visits;
         });
 
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);

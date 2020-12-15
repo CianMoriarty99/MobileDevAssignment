@@ -59,7 +59,7 @@ public class LocationIntentService extends IntentService {
                                     TrackingActivity.setLocation(location);
 
                                     LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
-                                    float[] locationArray = new float[]{(float) location.getLatitude(), (float) location.getLongitude()};
+                                    Float[] locationArray = new Float[]{(float) location.getLatitude(), (float) location.getLongitude()};
 
                                     VisitPoint visitPoint;
                                     Float temp = TrackingActivity.getTemperature();
