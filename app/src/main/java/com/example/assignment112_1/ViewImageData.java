@@ -44,7 +44,6 @@ public class ViewImageData extends AppCompatActivity implements OnMapReadyCallba
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        pointData = MainActivity.mVisitList;
         model = new ViewModelProvider(this,ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
         photoData = getIntent().getExtras().getParcelable("img");
 
@@ -138,22 +137,55 @@ public class ViewImageData extends AppCompatActivity implements OnMapReadyCallba
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
+        pointData = MainActivity.mVisitList;
+        try{
+
+
+            for (VisitData data : pointData) {
+
+                String dt = data.getTitle();
+                String pt = photoData.getPathTitle();
+
+                if (dt.equals(pt)) {
+
+                    for (VisitPoint p : data.getPoints()) {
+
+                        float[] loc = p.getLocation();
+                        LatLng latLngLoc = new LatLng(loc[0], loc[1]);
+                        Log.d("latlng", latLngLoc.toString());
+                        locsList.add(latLngLoc);
+
+                        if(p.getLocation() != photoData.getLoc()){
+
+                            MarkerOptions markerOptions = new MarkerOptions().position(latLngLoc)
+                                    .title(photoData.getPathTitle())
+                                    .icon(BitmapDescriptorFactory
+                                            .defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+                            mMap.addMarker(markerOptions);
+
+                        }
+                    }
+                }
+            }
+
+
+        }catch (Exception e){
+
+            Log.d("FULLVIEWMAP", "No Photo Data");
+
+
+        }
 
 
         try {
 
-
-
             float[] location = photoData.getLoc();
             LatLng loc = new LatLng(location[0], location[1]);
             MarkerOptions markerOptions = new MarkerOptions().position(loc)
-                    .title("Test")
+                    .title(photoData.getPathTitle())
                     .icon(BitmapDescriptorFactory
-                    .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-
-            Log.d("FULLVIEWMAP", markerOptions.toString());
-
-
+                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 
             mMap.addMarker(markerOptions);
 
@@ -164,39 +196,6 @@ public class ViewImageData extends AppCompatActivity implements OnMapReadyCallba
 
         }
 
-
-        for (VisitData data : pointData) {
-            Log.d("VisitData", data.getTitle());
-            Log.d("photoData", photoData.getPathTitle());
-
-            if(data.getTitle() == photoData.getPathTitle()){
-
-                for (VisitPoint p : data.getPoints()){
-
-                    Log.d("VisitPoint", p.toString());
-
-                    Float[] loc = p.getLocation();
-                    LatLng latLngLoc = new LatLng(loc[0], loc[1]);
-                    Log.d("latlng", latLngLoc.toString());
-                    locsList.add(latLngLoc);
-                    MarkerOptions markerOptions = new MarkerOptions().position(latLngLoc)
-                            .title("Test")
-                            .icon(BitmapDescriptorFactory
-                                .defaultMarker(BitmapDescriptorFactory.HUE_RED));
-
-                    mMap.addMarker(markerOptions);
-
-
-                }
-
-
-
-
-            }
-
-
-        }
-        Log.d("locslist", locsList.toString());
         //Add path between points
         PolylineOptions lineOptions = new PolylineOptions()
                 .addAll(locsList)
