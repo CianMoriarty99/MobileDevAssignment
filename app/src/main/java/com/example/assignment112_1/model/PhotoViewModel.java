@@ -8,6 +8,11 @@ import androidx.lifecycle.AndroidViewModel;
 import java.io.File;
 import java.util.List;
 
+/**
+ * This class provides interaction methods between the database (model), app views, and view-models.
+ * These are used to store photos as well as visit data in the database.
+ */
+
 public class PhotoViewModel extends AndroidViewModel {
     private PhotoRepository mRepository;
     private LiveData<List<PhotoData>> photos;

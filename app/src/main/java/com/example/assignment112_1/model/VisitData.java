@@ -10,6 +10,11 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class provides the necessary information to create the visits table in the database. It also
+ * provides the necessary setter and getter methods.
+ */
+
 @Entity
 public class VisitData {
     @PrimaryKey

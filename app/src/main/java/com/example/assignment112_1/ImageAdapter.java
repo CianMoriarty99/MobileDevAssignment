@@ -15,6 +15,11 @@ import com.example.assignment112_1.model.VisitData;
 import java.io.File;
 import java.util.List;
 
+/**
+ * This class provides the functionality required to display the images taken by the user in a
+ * gallery format.
+ */
+
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.View_Holder>  {
     private List<PhotoData> images;
     private final ImageListener mImageListener;

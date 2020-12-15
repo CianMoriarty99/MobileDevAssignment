@@ -1,4 +1,6 @@
 /*
+ * This code has been adapted from the code developed by Fabio Ciravegna for COM4510 Software Development for Mobile Devices
+ * Original copyright notice:
  * Copyright (c) 2018. This code has been developed by Fabio Ciravegna, The University of Sheffield. All rights reserved. No part of this code can be used without the explicit written permission by the author
  */
 
@@ -40,6 +42,10 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 
+/**
+ * This class handles the collection of location and sensor data. It creates and initialises the
+ * sensors and the location services.
+ */
 
 public class LocationService extends Service {
 
@@ -70,7 +76,11 @@ public class LocationService extends Service {
         thermometer.startSensing();
     }
 
-
+    /**
+     * Uses the LocationIntentService to start location and sensor updates that collect data until
+     * stopped.
+     * @param context the Activity in which to call this method
+     */
     private void startLocationUpdates(Context context) {
         Intent intent = new Intent(context, LocationIntentService.class);
         mLocationPendingIntent = PendingIntent.getService(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -102,6 +112,9 @@ public class LocationService extends Service {
         }
     }
 
+    /**
+     * Stops the location and sensor data updates and ends the service.
+     */
     public void stopLocationUpdates() {
         try {
             mFusedLocationClient.removeLocationUpdates(mLocationPendingIntent);
@@ -128,6 +141,11 @@ public class LocationService extends Service {
         return null;
     }
 
+    /**
+     * Provides a sticky notification to let the user know that the location and sensor data are
+     * still active.
+     * @return a notification that shows up on the drop-down bar
+     */
     private Notification getNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "my_channel";

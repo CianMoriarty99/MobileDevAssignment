@@ -1,7 +1,6 @@
 /*
  * This code has been adapted from the code developed by Fabio Ciravegna for COM4510 Software Development for Mobile Devices
- *
- * Original copyright note:
+ * Original copyright notice:
  * Copyright (c) 2020. This code has been developed by Fabio Ciravegna, The University of Sheffield. All rights reserved. No part of this code can be used without the explicit written permission by the author
  */
 
@@ -18,6 +17,13 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class provides methods to create and use any type of sensor.
+ * It provides methods to create and initialise the sensor as well as methods to start and stop the
+ * sensors.
+ * Finally, it provides a method to send the data points collected by the sensor.
+ */
+
 public class CommonSensor {
     private String TAG;
     private List<Float> sensorDataList;
@@ -33,7 +39,13 @@ public class CommonSensor {
     private long lastReportTime = 0;
     private boolean started;
 
-
+    /**
+     * creates a CommonSensor object.
+     * @param context the Activity in which you want this sensor to operate
+     * @param sensorType an int representing the type of the sensor needed, as listed in
+     *                   https://developer.android.com/guide/topics/sensors/sensors_overview
+     * @param TAG a tag given to the sensor for debugging purposes
+     */
     public CommonSensor(Context context, int sensorType, String TAG) {
         timePhoneWasLastRebooted = System.currentTimeMillis() - SystemClock.elapsedRealtime();
         mSamplingRateNano = (long) (SENSOR_READING_FREQUENCY) * 1000000;
@@ -45,6 +57,11 @@ public class CommonSensor {
         initSensorListener();
     }
 
+    /**
+     * Checks whether or not the sensor is available so it can be started.
+     * If it can be started then this method initiates the listener to receive the data points sent
+     * out by the sensors.
+     */
     private void initSensorListener() {
         if (!standardSensorAvailable()) {
             Log.d(TAG, "Standard " + TAG + " unavailable");
@@ -53,6 +70,8 @@ public class CommonSensor {
             mSensorListener = new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent event) {
+                    // this is needed so the that the location and sensor readings are only updated
+                    // every 20 seconds
                     long diff = event.timestamp - lastReportTime;
                     if (diff >= mSamplingRateNano) {
                         long actualTimeInMseconds = timePhoneWasLastRebooted + (long) (event.timestamp / 1000000.0);
@@ -72,10 +91,17 @@ public class CommonSensor {
         }
     }
 
+    /**
+     * Returns whether or not the sensor is available to use.
+     */
     public boolean standardSensorAvailable() {
         return (mSensor != null);
     }
 
+    /**
+     * Starts the sensor by registering it with the sensor manager and giving it a data collection
+     * rate.
+     */
     public void startSensing() {
         if (standardSensorAvailable()) {
             Log.d("Standard " + TAG + "", "starting listener");
@@ -86,6 +112,9 @@ public class CommonSensor {
         }
     }
 
+    /**
+     * Stops the sensor by unregistering it from the sensor manager and stops collecting data.
+     */
     public void stopSensor() {
         if (standardSensorAvailable()) {
             Log.d("Standard " + TAG + "", "stopping listener");

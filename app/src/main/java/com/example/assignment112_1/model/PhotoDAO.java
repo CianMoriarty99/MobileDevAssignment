@@ -11,6 +11,10 @@ import androidx.room.Update;
 
 import java.util.List;
 
+/**
+ * This interface outlines the functions needed to interact with the database.
+ */
+
 @Dao
 public interface PhotoDAO {
     @Insert

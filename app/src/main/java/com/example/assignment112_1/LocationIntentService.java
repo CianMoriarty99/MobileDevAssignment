@@ -1,4 +1,6 @@
 /*
+ * This code has been adapted from the code developed by Fabio Ciravegna for COM4510 Software Development for Mobile Devices
+ * Original copyright notice:
  * Copyright (c) 2018. This code has been developed by Fabio Ciravegna, The University of Sheffield. All rights reserved. No part of this code can be used without the explicit written permission by the author
  */
 
@@ -24,6 +26,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class provides necessary functionality to handle data used by LocationService.
+ */
 
 public class LocationIntentService extends IntentService {
     private List<Location> locations;
@@ -37,9 +42,9 @@ public class LocationIntentService extends IntentService {
     }
 
     /**
-     * called when a location is recognised
-     *
-     * @param intent
+     * Called to extract the location and sensor data to put it in a Visit Point. The visit points
+     * are then added to the Tracking Activity list of data to be saved as part of the visit.
+     * @param intent the intent from which data will be extracted
      */
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -61,7 +66,7 @@ public class LocationIntentService extends IntentService {
                                     TrackingActivity.setLocation(location);
 
                                     LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
-                                    float[] locationArray = new float[]{(float) location.getLatitude(), (float) location.getLongitude()};
+                                    Float[] locationArray = new Float[]{(float) location.getLatitude(), (float) location.getLongitude()};
 
                                     VisitPoint visitPoint;
                                     Float temp = TrackingActivity.getTemperature();

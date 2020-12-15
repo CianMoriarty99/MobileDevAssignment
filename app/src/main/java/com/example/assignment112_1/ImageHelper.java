@@ -17,6 +17,11 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * This class provides static methods to help with handling photos in the app.
+ */
+
+// TODO shouldn't this class be merged with BitmapHelper?
 public class ImageHelper {
     public static class ShowSingleImageTask extends AsyncTask<FileAndView, Void, Bitmap> {
         FileAndView fileAndView;
