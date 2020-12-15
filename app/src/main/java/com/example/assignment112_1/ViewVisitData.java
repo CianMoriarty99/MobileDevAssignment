@@ -74,7 +74,7 @@ public class ViewVisitData extends AppCompatActivity implements OnMapReadyCallba
         if (visitData != null) {
             for (VisitPoint p : visitData.getPoints()) {
 
-                Float[] loc = p.getLocation();
+                float[] loc = p.getLocation();
                 LatLng latLngLoc = new LatLng(loc[0], loc[1]);
 
                 locsList.add(latLngLoc);
