@@ -50,7 +50,6 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        pointData = MainActivity.mVisitList;
         model = new ViewModelProvider(this,ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
         photoData = getIntent().getExtras().getParcelable("img");
 
@@ -144,35 +143,46 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
+        pointData = MainActivity.mVisitList;
+        try{
 
 
-        for (VisitData data : pointData) {
+            for (VisitData data : pointData) {
 
-            String dt = data.getTitle();
-            String pt = photoData.getPathTitle();
+                String dt = data.getTitle();
+                String pt = photoData.getPathTitle();
 
-            if (dt.equals(pt)) {
+                if (dt.equals(pt)) {
 
-                for (VisitPoint p : data.getPoints()) {
+                    for (VisitPoint p : data.getPoints()) {
 
-                    float[] loc = p.getLocation();
-                    LatLng latLngLoc = new LatLng(loc[0], loc[1]);
-                    Log.d("latlng", latLngLoc.toString());
-                    locsList.add(latLngLoc);
+                        float[] loc = p.getLocation();
+                        LatLng latLngLoc = new LatLng(loc[0], loc[1]);
+                        Log.d("latlng", latLngLoc.toString());
+                        locsList.add(latLngLoc);
 
-                    if(p.getLocation() != photoData.getLoc()){
+                        if(p.getLocation() != photoData.getLoc()){
 
-                        MarkerOptions markerOptions = new MarkerOptions().position(latLngLoc)
-                                .title(photoData.getPathTitle())
-                                .icon(BitmapDescriptorFactory
-                                        .defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                            MarkerOptions markerOptions = new MarkerOptions().position(latLngLoc)
+                                    .title(photoData.getPathTitle())
+                                    .icon(BitmapDescriptorFactory
+                                            .defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-                        mMap.addMarker(markerOptions);
+                            mMap.addMarker(markerOptions);
 
+                        }
                     }
                 }
             }
+
+
+        }catch (Exception e){
+
+            Log.d("FULLVIEWMAP", "No Photo Data");
+
+
         }
+
 
         try {
 

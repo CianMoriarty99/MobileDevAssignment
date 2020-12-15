@@ -13,20 +13,20 @@ import java.util.List;
  */
 
 public class VisitPoint {
-    private Float[] location;
+    private float[] location;
     private Float pressure;
     private Float temperature;
 
-    public VisitPoint(Float[] location, Float temperature, Float pressure) {
+    public VisitPoint(float[] location, Float temperature, Float pressure) {
         this.location = location;
         this.pressure = pressure;
         this.temperature = temperature;
     }
 
-    public Float[] getLocation() {
+    public float[] getLocation() {
         return location;
     }
-    public void setLocation(Float[] location) {
+    public void setLocation(float[] location) {
         this.location= location;
     }
 

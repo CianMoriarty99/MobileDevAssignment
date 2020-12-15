@@ -495,9 +495,9 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
     public void onMapReady(GoogleMap googleMap) {
         @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
         Canvas canvas = new Canvas();
-        Bitmap bitmap = Bitmap.createBitmap(25, 42, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         canvas.setBitmap(bitmap);
-        drawable.setBounds(0, 0, 25, 42);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
         drawable.draw(canvas);
         BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
         mMap = googleMap;
@@ -515,6 +515,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                     MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(data.getLoc()[0], data.getLoc()[1]))
                             .title(data.getPathTitle())
                             //TODO Show photo thumbnail?
+                            .alpha(1.0f)
                             .icon(icon);
 
                     Marker m =  mMap.addMarker(markerOptions);
