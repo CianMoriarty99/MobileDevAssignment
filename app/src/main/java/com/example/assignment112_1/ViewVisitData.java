@@ -49,7 +49,7 @@ public class ViewVisitData extends AppCompatActivity implements OnMapReadyCallba
         TextView dateText = findViewById(R.id.path_date);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.fragment_visit_map);
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
