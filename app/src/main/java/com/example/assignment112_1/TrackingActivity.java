@@ -5,15 +5,18 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -129,9 +132,21 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         mButtonStop.setEnabled(true);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_camera);
-        fab.setOnClickListener((view) -> {
-            EasyImage.openCamera(TrackingActivity.this, 0);
-        });
+        PackageManager pm = this.getPackageManager();
+
+        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    EasyImage.openCamera(getActivity(), 0);
+                }
+            });
+        }
+        else{
+
+            fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+        }
 
 
         mCurrentTemperature = mCurrentPressure = null;

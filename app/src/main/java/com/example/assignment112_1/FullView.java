@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.assignment112_1.model.PhotoData;
@@ -33,6 +34,8 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.example.assignment112_1.TrackingActivity.getActivity;
 
 /**
  * This class provides a display for one full image at a time.
@@ -112,17 +115,6 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
 
 
-        //TODO get fullscreen image
-       /* imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, FullView.class);
-                i.putExtra("img", imageData);
-                startActivity(i);
-            }
-        });
-        */
-
 
     }
 
@@ -143,7 +135,7 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        pointData = MainActivity.mVisitList;
+        pointData = MainActivity.myVisitList;
         try{
 
 
