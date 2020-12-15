@@ -7,6 +7,11 @@ import android.widget.ImageView;
 
 import java.io.File;
 
+/**
+ * This class provides static methods to help with handling photos in the app.
+ */
+
+// TODO shouldn't this class be merged with BitmapHelper?
 public class ImageHelper {
     public static class ShowSingleImageTask extends AsyncTask<FileAndView, Void, Bitmap> {
         FileAndView fileAndView;

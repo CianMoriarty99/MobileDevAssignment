@@ -13,6 +13,15 @@ import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class provides functions to convert between data types as needed for storage in the
+ * database. The available conversions are as follows:
+ * between [database-friendly format] and [convenient format]
+ * - between String and Float[]
+ * - between String and VisitPoint
+ * - between Long and Date
+ */
+
 public class Converters {
 
     @TypeConverter

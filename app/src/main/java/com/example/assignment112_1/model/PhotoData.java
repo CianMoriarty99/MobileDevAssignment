@@ -16,6 +16,11 @@ import com.example.assignment112_1.TrackingActivity;
 
 import java.io.File;
 
+/**
+ * This class provides the necessary information to create the photos table in the database. It also
+ * provides the necessary setter and getter methods.
+ */
+
 @Entity(foreignKeys = {
 @ForeignKey(entity = VisitData.class,
         parentColumns = "title",

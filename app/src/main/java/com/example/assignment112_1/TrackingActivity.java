@@ -42,6 +42,10 @@ import pl.aprilapps.easyphotopicker.EasyImage;
 
 import static com.example.assignment112_1.BitmapHelper.calculateInSampleSize;
 
+/**
+ * This class provides the actual data tracking functionality that is needed to collect and record
+ * location and sensor data for each visit.
+ */
 
 public class TrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -109,8 +113,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         setActivity(this);
 
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
+        // each point in the list contains the location, temperature, and pressure data
         pointsList = new ArrayList<>();
-        images = new ArrayList<>();
+        images = new ArrayList<>(); // only the images taken during the visit
         title = getIntent().getStringExtra("Title");
 
         mButtonStop = (Button) findViewById(R.id.button_stop);
@@ -133,7 +138,9 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         mCurrentTemperature = mCurrentPressure = null;
     }
 
-
+    /**
+     * Checks the necessary permissions to be able to access the location.
+     */
     private void initLocations() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Should we show an explanation?
@@ -195,12 +202,17 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
+    /**
+     * Asks the LocationService to stop the location and sensor data updates.
+     */
     private void stopLocationUpdates() {
         Intent myService = new Intent(TrackingActivity.this, LocationService.class);
         stopService(myService);
     }
 
-
+    /**
+     * Commits the data collected during the visit to the database.
+     */
     private void saveVisit() {
         Date currentDateTime = new Date();
         VisitData visit = new VisitData(title, currentDateTime, pointsList);
@@ -265,7 +277,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
 
     /**
-     * save returned photos to the d.b and link with the visit
+     * Saves photos taken during the visit to the database and associates the collected metadata
+     * such as location and sensor readings to the image.
      * @param returnedPhotos
      */
     private void onPhotosReturned(List<File> returnedPhotos) {

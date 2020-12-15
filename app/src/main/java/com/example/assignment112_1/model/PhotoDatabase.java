@@ -9,6 +9,9 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+/**
+ * This abstract class outlines the necessary features to create and interact with a Room database.
+ */
 
 @Database(entities = {PhotoData.class, VisitData.class}, version = 1, exportSchema = false)
 @TypeConverters({Converters.class})

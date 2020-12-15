@@ -7,6 +7,11 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class provides a structure for the visit points that can be saved in the database. Each data
+ * point contains the location, temperature, and pressure readings for the points on the visit path.
+ */
+
 public class VisitPoint {
     private Float[] location;
     private Float pressure;

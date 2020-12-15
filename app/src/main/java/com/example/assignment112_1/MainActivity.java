@@ -71,6 +71,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+/**
+ * This class is the starting point of the application. It contains the main gallery display as well
+ * as buttons for the users to access the camera and to start recording a new visit. It also allows
+ * the user to take photos without recording their visit.
+ */
+
 public class MainActivity extends AppCompatActivity implements MyAdapter.ImageListener, OnMapReadyCallback {
 
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 2987;
@@ -284,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
 
 
     /**
-     * save returned photos in d.b
+     * Saves photos taken by the user to the database.
      * @param returnedPhotos
      */
     private void onPhotosReturned(List<File> returnedPhotos) {
@@ -294,6 +300,12 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         }
     }
 
+    /**
+     * Checks that the necessary permissions to run the app are granted. These permissions are to
+     * read and write to external storage for the user to be able to take save taken photos to the
+     * phone's gallery. Other permissions are needed to access the location and sensors.
+     * @param context this Activity
+     */
     public void checkPermissions(final Context context) {
         int currentAPIVersion = Build.VERSION.SDK_INT;
         if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
@@ -365,6 +377,9 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         }
     }
 
+    /**
+     * Iinitialises the EasyImage library to allow taking and saving photos.
+     */
     private void initEasyImage() {
         EasyImage.configuration(this)
                 .setImagesFolderName("EasyImage sample")

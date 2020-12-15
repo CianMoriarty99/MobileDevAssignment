@@ -12,6 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * This class provides the implementations needed to update visits and photo data in the database.
+ */
 
 public class PhotoRepository extends ViewModel {
     private final PhotoDAO mPhotoDao;
@@ -24,31 +27,52 @@ public class PhotoRepository extends ViewModel {
     }
 
     /**
-     * it gets the data when changed in the db and returns it to the ViewModel
-     * @return
+     * Gets the image data when it is changed in the database and returns it to the ViewModel.
      */
     public LiveData<List<PhotoData>> getPhotoData() {
         return mPhotoDao.retrieveAllData();
     }
+
+    /**
+     * Gets the visit data when it is changed in the database and returns it to the ViewModel.
+     */
     public LiveData<List<VisitData>> getVisitData() {
         return mPhotoDao.retrieveAllVisitData();
     }
 
+    /**
+     * Updates photo data in the database.
+     */
     public void updatePhotoData(PhotoData photoData) {
         new updatePhotoAsync(mPhotoDao, photoData, mApplication).execute();
     }
 
+    /**
+     * Inserts a new photo taken from the home screen into the database.
+     */
     public void insertPhotoData(File photoFile) {
         new InsertPhotoAsync(mPhotoDao, photoFile, mApplication).execute();
     }
+
+    /**
+     * Inserts a new photo taken during a visit into the database along with its associated
+     * metadata.
+     */
     public void insertPhotoData(File photoFile, String title, float[] loc, Float temperature, Float pressure) {
         new InsertPhotoAsync(mPhotoDao, photoFile, mApplication, title, loc, temperature, pressure).execute();
     }
 
+    /**
+     * Inserts a new visit into the database, which includes all the location, temperature, and
+     * pressure data points tracked during the visit.
+     */
     public void insertVisitData(VisitData visitData) {
         new InsertVisitAsync(mPhotoDao, visitData, mApplication).execute();
     }
 
+    /**
+     * This class provides async process to update photos into the database in the background.
+     */
     private static class updatePhotoAsync extends AsyncTask<Void, Void, Void> {
         private final PhotoDAO mPhotoDao;
         private final PhotoData mPhotoData;
@@ -69,7 +93,7 @@ public class PhotoRepository extends ViewModel {
     }
 
     /**
-     * Async process to insert photos into the database in the background.
+     * This class provides async process to insert photos into the database in the background.
      */
     private static class InsertPhotoAsync extends AsyncTask<Void, Void, Void> {
         private final PhotoDAO mPhotoDao;
@@ -80,6 +104,9 @@ public class PhotoRepository extends ViewModel {
         private final Float mPressure;
         private final Float mTemperature;
 
+        /**
+         * Inserts a photo taken from the home screen outside of a recorded visit into the database.
+         */
         InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application) {
             mPhotoDao = dao;
             mPhotoFile = photoFile;
@@ -90,6 +117,10 @@ public class PhotoRepository extends ViewModel {
             mTemperature = null;
         }
 
+        /**
+         * Inserts a photo taken during a recorded visit into the database along with its associated
+         * metadata.
+         */
         InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application, String title, float[] loc, Float temp, Float pressure) {
             mPhotoDao = dao;
             mPhotoFile = photoFile;
@@ -117,13 +148,16 @@ public class PhotoRepository extends ViewModel {
 
 
     /**
-     * Async process to insert photos into the database in the background.
+     * This class provides sync process to insert visits into the database in the background.
      */
     private static class InsertVisitAsync extends AsyncTask<Void, Void, Void> {
         private final PhotoDAO mPhotoDao;
         private final VisitData mVisitData;
         private final Application mApplication;
 
+        /**
+         * Inserts location and sensor data taken during a recorded visit into the database.
+         */
         InsertVisitAsync(PhotoDAO dao, VisitData visitData, Application application) {
             mPhotoDao = dao;
             mVisitData = visitData;

@@ -34,6 +34,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class provides a display for one full image at a time.
+ */
+
 public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
 

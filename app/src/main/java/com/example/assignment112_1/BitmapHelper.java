@@ -12,7 +12,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * This class provides static methods to help with handling photos in the app.
+ */
+
 public class BitmapHelper {
+
+    /**
+     * Provides a thumbnail image file given the full image file.
+     * @param fileString path to the original image file
+     * @param reqWidth width of the required thumbnail, in pixels
+     * @param reqHeight height of the required thumbnail, in pixels
+     * @param context the Activity that requires the thumbnail
+     * @return a smaller thumbnail for the given image file
+     * @throws IOException
+     */
     public static File generateThumbnail(String fileString, int reqWidth, int reqHeight, Context context) throws IOException {
         // First decode with inJustDecodeBounds=true to check dimensions
 
@@ -40,6 +54,14 @@ public class BitmapHelper {
         return fullFile;
     }
 
+    /**
+     * Calculates the actual size of an image given the requested values.
+     * @param options BitmapFactory options
+     * @param reqWidth required width
+     * @param reqHeight required height
+     * @return the largest power-of-2 image size that that is less than the requested width and
+     * height
+     */
     public static int calculateInSampleSize(
             BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
