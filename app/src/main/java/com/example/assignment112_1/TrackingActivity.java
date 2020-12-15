@@ -107,7 +107,6 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         setActivity(this);
-        initLocations();
 
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
         pointsList = new ArrayList<>();
@@ -132,9 +131,6 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
 
         mCurrentTemperature = mCurrentPressure = null;
-        Intent serviceIntent = new Intent(getApplicationContext(),
-                LocationService.class);
-        startService(serviceIntent);
     }
 
 
@@ -149,7 +145,6 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
                 // sees the explanation, try again to request the permission.
 
             } else {
-
                 // No explanation needed, we can request the permission.
 
                 ActivityCompat.requestPermissions(this,
@@ -165,6 +160,12 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             }
 
             return;
+        } else {
+            stopLocationUpdates();
+            Intent serviceIntent = new Intent(getApplicationContext(),
+                    LocationService.class);
+            startService(serviceIntent);
+            mMap.setMyLocationEnabled(true);
         }
     }
 
@@ -182,6 +183,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
                     Intent serviceIntent = new Intent(getApplicationContext(),
                             LocationService.class);
                     startService(serviceIntent);
+                    mMap.setMyLocationEnabled(true);
                 } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
@@ -225,12 +227,12 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
-    @SuppressLint("MissingPermission")
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.setMyLocationEnabled(true);
+        initLocations();
     }
 
 
@@ -269,7 +271,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private void onPhotosReturned(List<File> returnedPhotos) {
         for (File file : returnedPhotos) {
 
-            Float[] loc = {(float) mCurrentLocation.getLatitude(), (float) mCurrentLocation.getLongitude()};
+            float[] loc = {(float) mCurrentLocation.getLatitude(), (float) mCurrentLocation.getLongitude()};
 
             FileAndSense fileAndLoc = new FileAndSense(file, loc, mCurrentTemperature, mCurrentPressure);
             images.add(fileAndLoc);
@@ -310,19 +312,19 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     }
 
     public static final class FileAndSense {
-        private final Float[] loc;
+        private final float[] loc;
         private final File file;
         private final Float temp;
         private final Float pressure;
 
-        public FileAndSense(File first, Float[] second, Float temp, Float pressure) {
+        public FileAndSense(File first, float[] second, Float temp, Float pressure) {
             this.file = first;
             this.loc = second;
             this.temp = temp;
             this.pressure = pressure;
         }
 
-        public Float[] getLoc() {
+        public float[] getLoc() {
             return loc;
         }
         public File getFile() {

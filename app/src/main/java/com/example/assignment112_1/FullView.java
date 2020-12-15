@@ -1,19 +1,19 @@
 package com.example.assignment112_1;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.ViewModelProvider;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.assignment112_1.model.PhotoData;
+import com.example.assignment112_1.model.PhotoViewModel;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -25,12 +25,15 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int ACCESS_FINE_LOCATION = 123;
     private static GoogleMap mMap;
-    private static PhotoData img;
+    private PhotoData photoData;
+    private PhotoViewModel model;
+    private EditText descriptionText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        img = getIntent().getExtras().getParcelable("img");
+        model = new ViewModelProvider(this,ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
+        photoData = getIntent().getExtras().getParcelable("img");
 
 
         setContentView(R.layout.activity_full_view);
@@ -39,56 +42,82 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
 
 
-
-
         ImageView imageView = findViewById(R.id.img_full);
         TextView titleText = findViewById(R.id.path_title);
-        TextView descriptionText = findViewById(R.id.description);
         TextView temperatureText = findViewById(R.id.temperature);
         TextView pressureText = findViewById(R.id.pressure);
+        descriptionText = findViewById(R.id.txt_image_desc);
 
-
-        imageView.setImageBitmap(BitmapFactory.decodeFile(img.getPhotoFile()));
-
-
+        imageView.setImageBitmap(BitmapFactory.decodeFile(photoData.getPhotoFile()));
 
         try{
-            if(img.getPathTitle() != null)
-                titleText.setText("Path Title:" + img.getPathTitle());
+            if(photoData.getPathTitle() != null)
+                titleText.setText("Path Title:" + photoData.getPathTitle());
 
         }catch (Exception e){
             Log.d("PHOTODATA", "No title");
         }
 
         try{
-            if(img.getDescription() != null)
-                descriptionText.setText("Description:" + img.getDescription());
+            if(photoData.getDescription() != null)
+                descriptionText.setText(photoData.getDescription());
 
         }catch (Exception e){
             Log.d("PHOTODATA", "No description");
         }
 
         try{
-            temperatureText.setText("Temperature:" + img.getTemperature().toString());
+            temperatureText.setText("Temperature:" + photoData.getTemperature().toString());
 
         }catch (Exception e){
             Log.d("PHOTODATA", "No temperature");
         }
 
         try{
-            pressureText.setText("Pressure:" + img.getPressure().toString());
+            pressureText.setText("Pressure:" + photoData.getPressure().toString());
 
         }catch (Exception e){
             Log.d("PHOTODATA", "No pressure");
         }
 
 
+        //Saves the description when the edit-text is unselected.
+        descriptionText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus) {
+                    String description = descriptionText.getText().toString();
+                    photoData.setDescription(description);
+                    model.updatePhotoData(photoData);
+                }
+            }
+        });
 
 
 
+        //TODO get fullscreen image
+       /* imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, FullView.class);
+                i.putExtra("img", imageData);
+                startActivity(i);
+            }
+        });
+        */
 
 
+    }
 
+    //Save description when the back button is pressed.
+    @Override
+    public void onBackPressed()
+    {
+        super.onBackPressed();
+        String description = descriptionText.getText().toString();
+        Log.e("Back", "Back! "+description);
+        photoData.setDescription(description);
+        Log.e("Back2", "Back! "+photoData.getDescription());
+        model.updatePhotoData(photoData);
 
     }
 
@@ -99,21 +128,22 @@ public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
 
         try {
-            Float[] loc = img.getLoc();
-
-            MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(loc[0], loc[1]))
+            float[] location = photoData.getLoc();
+            LatLng loc = new LatLng(location[0], location[1]);
+            MarkerOptions markerOptions = new MarkerOptions().position(loc)
                     .title("Test");
             Log.d("FULLVIEWMAP", markerOptions.toString());
 
 
 
             mMap.addMarker(markerOptions);
+
+            // it centres the camera around the new location and zooms in
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 18.0f));
         }catch (Exception e){
             Log.d("FULLVIEWMAP", "No location");
 
         }
-
-
     }
 
 

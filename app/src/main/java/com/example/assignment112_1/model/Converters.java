@@ -1,5 +1,6 @@
 package com.example.assignment112_1.model;
 
+
 import androidx.room.TypeConverter;
 
 import com.google.gson.Gson;
@@ -9,48 +10,38 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.lang.reflect.Type;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 public class Converters {
+
     @TypeConverter
-    public static String FloatArrayToString(Float[] values) {
-
-        try {
-            JSONArray jsonArray = new JSONArray();
-            for (float value : values) {
-                try {
-                    jsonArray.put(value);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+    public static String FloatArrayToString(float[] values) {
+        JSONArray jsonArray = new JSONArray();
+        for (float value : values) {
+            try {
+                jsonArray.put(value);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            return jsonArray.toString();
-
-        }catch (Exception e){
-            return null;
         }
-
+        return jsonArray.toString();
     }
 
     @TypeConverter
-    public static Float[] StringToFloatArray(String values) {
+    public static float[] StringToFloatArray(String values) {
         try {
             JSONArray jsonArray = new JSONArray(values);
-            Float[] floatArray = new Float[jsonArray.length()];
+            float[] floatArray = new float[jsonArray.length()];
             for (int i = 0; i < jsonArray.length(); i++) {
                 floatArray[i] = Float.parseFloat(jsonArray.getString(i));
             }
             return floatArray;
-        } catch (Exception e) {
+        } catch (JSONException e) {
             e.printStackTrace();
-            return null;
-
         }
+        return null;
     }
-
-
 
     @TypeConverter
     public String fromVisitPointList(List<VisitPoint> visitPoints) {

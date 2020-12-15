@@ -34,7 +34,7 @@ public class PhotoViewModel extends AndroidViewModel {
     public void insertPhotoData(File photoFile) {
         mRepository.insertPhotoData(photoFile);
     }
-    public void insertPhotoData(File photoFile, String title, Float[] loc, Float temperature, Float pressure) {
+    public void insertPhotoData(File photoFile, String title, float[] loc, Float temperature, Float pressure) {
         mRepository.insertPhotoData(photoFile, title, loc, temperature, pressure);
     }
     public void insertVisitData(VisitData visitData) {
