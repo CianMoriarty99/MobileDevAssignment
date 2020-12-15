@@ -41,7 +41,7 @@ public class PhotoRepository extends ViewModel {
     public void insertPhotoData(File photoFile) {
         new InsertPhotoAsync(mPhotoDao, photoFile, mApplication).execute();
     }
-    public void insertPhotoData(File photoFile, String title, Float[] loc, Float temperature, Float pressure) {
+    public void insertPhotoData(File photoFile, String title, float[] loc, Float temperature, Float pressure) {
         new InsertPhotoAsync(mPhotoDao, photoFile, mApplication, title, loc, temperature, pressure).execute();
     }
 
@@ -76,7 +76,7 @@ public class PhotoRepository extends ViewModel {
         private final File mPhotoFile;
         private final Application mApplication;
         private final String mTitle;
-        private final Float[] mLoc;
+        private final float[] mLoc;
         private final Float mPressure;
         private final Float mTemperature;
 
@@ -85,12 +85,12 @@ public class PhotoRepository extends ViewModel {
             mPhotoFile = photoFile;
             mApplication = application;
             mTitle  = null;
-            mLoc = new Float[]{null};
+            mLoc = new float[]{};
             mPressure = null;
             mTemperature = null;
         }
 
-        InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application, String title, Float[] loc, Float temp, Float pressure) {
+        InsertPhotoAsync(PhotoDAO dao, File photoFile, Application application, String title, float[] loc, Float temp, Float pressure) {
             mPhotoDao = dao;
             mPhotoFile = photoFile;
             mApplication = application;

@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 2987;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 7829;
     private static final int ACCESS_FINE_LOCATION = 123;
+    private static final int ACCESS_COARSE_LOCATION = 123;
     private Activity activity;
     private PhotoViewModel model;
     private List<PhotoData> myPictureList;
@@ -89,10 +90,6 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //stop previous service.
-        Intent myService = new Intent(MainActivity.this, LocationService.class);
-        stopService(myService);
 
         setContentView(R.layout.activity_main);
         activity = this;
@@ -265,6 +262,9 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         });
 
         dialog.show();
+        Intent i = new Intent(MainActivity.this, FullView.class);
+        i.putExtra("img", imageData);
+        startActivity(i);
     }
 
 
@@ -463,12 +463,35 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                 // app-defined int constant. The callback method gets the
                 // result of the request.
             }
-
             return;
+        } else {
+            mMap.setMyLocationEnabled(true);
         }
     }
 
     @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case ACCESS_COARSE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted so restart location service:
+                    mMap.setMyLocationEnabled(true);
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
@@ -478,18 +501,18 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         drawable.setBounds(0, 0, 25, 42);
         drawable.draw(canvas);
         BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
-
-
-        initLocations();
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.setMyLocationEnabled(true);
+        initLocations();
+
+
+
 
 
         try{
 
             for (PhotoData data : myPictureList) {
-                if (data.getLoc()[0] != null) {
+                if (data.getLoc().length > 0) {
                     MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(data.getLoc()[0], data.getLoc()[1]))
                             .title(data.getPathTitle())
                             //TODO Show photo thumbnail?
@@ -502,8 +525,10 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
             mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
-                    PhotoData data = (PhotoData) marker.getTag();
-                    ShowDialogBox(data);
+                    PhotoData imageData = (PhotoData) marker.getTag();
+                    Intent i = new Intent(MainActivity.this, FullView.class);
+                    i.putExtra("img", imageData);
+                    startActivity(i);
                     return false;
                 }
             });
@@ -541,4 +566,5 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
         }
     }
 
+    }
 }

@@ -26,7 +26,7 @@ public class PhotoData implements Parcelable {
     @PrimaryKey(autoGenerate = true) private int id=0;
     private String photoFile;
     private String thumbFile;
-    private Float[] loc;
+    private float[] loc;
     private String description;
     @ColumnInfo(name="path_title")
     private String pathTitle;
@@ -36,7 +36,7 @@ public class PhotoData implements Parcelable {
     @Ignore
     public Bitmap picture;
 
-    public PhotoData(String photoFile, String thumbFile, Float[] loc,
+    public PhotoData(String photoFile, String thumbFile, float[] loc,
                      String description, String pathTitle, Float temperature, Float pressure) {
         this.photoFile = photoFile;
         this.thumbFile = thumbFile;
@@ -52,6 +52,19 @@ public class PhotoData implements Parcelable {
         id = in.readInt();
         photoFile = in.readString();
         thumbFile = in.readString();
+        loc = in.createFloatArray();
+        description = in.readString();
+        pathTitle = in.readString();
+        if (in.readByte() == 0) {
+            pressure = null;
+        } else {
+            pressure = in.readFloat();
+        }
+        if (in.readByte() == 0) {
+            temperature = null;
+        } else {
+            temperature = in.readFloat();
+        }
         picture = in.readParcelable(Bitmap.class.getClassLoader());
     }
 
@@ -81,10 +94,10 @@ public class PhotoData implements Parcelable {
         this.description = description;
     }
 
-    public Float[] getLoc() {
+    public float[] getLoc() {
         return loc;
     }
-    public void setLoc(Float[] loc) {
+    public void setLoc(float[] loc) {
         this.loc = loc;
     }
 
@@ -130,7 +143,6 @@ public class PhotoData implements Parcelable {
         this.pressure = pressure;
     }
 
-
     @Override
     public int describeContents() {
         return 0;
@@ -141,6 +153,21 @@ public class PhotoData implements Parcelable {
         parcel.writeInt(id);
         parcel.writeString(photoFile);
         parcel.writeString(thumbFile);
+        parcel.writeFloatArray(loc);
+        parcel.writeString(description);
+        parcel.writeString(pathTitle);
+        if (pressure == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeFloat(pressure);
+        }
+        if (temperature == null) {
+            parcel.writeByte((byte) 0);
+        } else {
+            parcel.writeByte((byte) 1);
+            parcel.writeFloat(temperature);
+        }
         parcel.writeParcelable(picture, i);
     }
 }
