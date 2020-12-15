@@ -2,11 +2,12 @@ package com.example.assignment112_1.model;
 
 import android.app.Application;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.assignment112_1.BitmapHelper;
+import com.example.assignment112_1.ImageHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,14 +104,11 @@ public class PhotoRepository extends ViewModel {
 
         @Override
         protected Void doInBackground(final Void... params) {
-            try {
-                String photoFile = mPhotoFile.toString();
-                File thumb = BitmapHelper.generateThumbnail(photoFile, 150, 150, mApplication);
-                PhotoData mPhotoData = new PhotoData(photoFile, thumb.toString(), mLoc, "", mTitle, mTemperature, mPressure);
-                mPhotoDao.insert(mPhotoData);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+            String photoFile = mPhotoFile.getAbsolutePath();
+            String thumb = ImageHelper.getThumbFile(photoFile, 150, 150, mApplication);
+            PhotoData mPhotoData = new PhotoData(photoFile, thumb, mLoc, "", mTitle, mTemperature, mPressure);
+            mPhotoDao.insert(mPhotoData);
             return null;
         }
     }

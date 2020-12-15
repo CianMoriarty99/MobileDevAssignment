@@ -13,18 +13,13 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,13 +30,7 @@ import android.view.View;
 
 import com.example.assignment112_1.model.PhotoData;
 import com.example.assignment112_1.model.PhotoViewModel;
-import com.example.assignment112_1.model.VisitPoint;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.example.assignment112_1.model.VisitData;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -53,22 +42,16 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
 
-import android.app.Dialog;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements MyAdapter.ImageListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements ImageAdapter.ImageListener, OnMapReadyCallback, VisitAdapter.VisitListener {
 
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 2987;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 7829;
@@ -77,7 +60,10 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
     private Activity activity;
     private PhotoViewModel model;
     private List<PhotoData> myPictureList;
-    private MyAdapter mAdapter;
+    private List<VisitData> myVisitList;
+    private ImageAdapter mImageAdapter;
+    private VisitAdapter mVisitAdapter;
+    private RecyclerView mVisitRecyclerView, mImageRecyclerView;
     public static boolean sortByDate, sortByPath, listViewBool, mapBool;
     private GoogleMap mMap;
 
@@ -98,25 +84,34 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                 .findFragmentById(R.id.map_frag);
         mapFragment.getMapAsync(this);
 
-        RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
+        mImageRecyclerView = findViewById(R.id.recycler_view);
         // set up the RecyclerView
         myPictureList = new ArrayList<>();
-        mAdapter = new MyAdapter(myPictureList, this);
-        mRecyclerView.setAdapter(mAdapter);
+        mImageAdapter = new ImageAdapter(myPictureList, this);
+        mImageRecyclerView.setAdapter(mImageAdapter);
+        mImageRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+
+        mVisitRecyclerView = findViewById(R.id.visit_recycler_view);
+        myVisitList = new ArrayList<>();
+        mVisitAdapter = new VisitAdapter(myVisitList, this);
+        mVisitRecyclerView.setAdapter(mVisitAdapter);
+        mVisitRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         if (listViewBool) {
-            mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+            mImageRecyclerView.setVisibility(View.VISIBLE);
+            mVisitRecyclerView.setVisibility(View.INVISIBLE);
         } else {
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            mVisitRecyclerView.setVisibility(View.VISIBLE);
+            mImageRecyclerView.setVisibility(View.INVISIBLE);
         }
         if (mapBool) {
             mapFragment.getView().setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.INVISIBLE);
-
+            mImageRecyclerView.setVisibility(View.INVISIBLE);
+            mVisitRecyclerView.setVisibility(View.INVISIBLE);
         } else {
-            mRecyclerView.setVisibility(View.VISIBLE);
             mapFragment.getView().setVisibility(View.INVISIBLE);
         }
+
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos -> {
@@ -146,13 +141,16 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
                     }
                 });
             }
-            mAdapter.setItems(photos);
-            mAdapter.notifyDataSetChanged();
+            mImageAdapter.setImages(photos);
+            mImageAdapter.notifyDataSetChanged();
         });
 
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
+            myVisitList = visits;
+            Log.e("VISITS?", String.valueOf(visits.size()));
+            mVisitAdapter.setVisits(visits);
         });
 
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
@@ -462,6 +460,11 @@ public class MainActivity extends AppCompatActivity implements MyAdapter.ImageLi
             Log.d("ONMAPREADY", "No photo data");
 
         }
+
+    }
+
+    @Override
+    public void onVisitClick(int position) {
 
     }
 }

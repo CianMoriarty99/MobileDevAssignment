@@ -22,8 +22,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class FullView extends AppCompatActivity implements OnMapReadyCallback {
 
-
-    private static final int ACCESS_FINE_LOCATION = 123;
     private static GoogleMap mMap;
     private PhotoData photoData;
     private PhotoViewModel model;
