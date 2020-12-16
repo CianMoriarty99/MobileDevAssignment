@@ -15,10 +15,12 @@ import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
@@ -39,9 +41,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
@@ -146,6 +152,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
         }
 
+        displayElapsedTime();
 
         mCurrentTemperature = mCurrentPressure = null;
     }
@@ -175,6 +182,26 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             setResult(RESULT_CANCELED, intent);
         }
         finish();
+    }
+
+    /**
+     * Displays the elapsed time in seconds for the current visit.
+     */
+    private void displayElapsedTime() {
+        final int[] secondsElapsed = {0};
+        TextView elapsedTimeDisplay = (TextView) findViewById(R.id.elapsed_time);
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                int hours = secondsElapsed[0] / 3600;
+                int minutes = (secondsElapsed[0] % 3600) / 60;
+                int seconds = secondsElapsed[0] % 60;
+                String time = String.format(Locale.getDefault(),"%d:%02d:%02d", hours, minutes, seconds);
+                secondsElapsed[0]++;
+                getActivity().runOnUiThread(() -> elapsedTimeDisplay.setText(time));
+            }
+        }, 0, 1000);
     }
 
     /**
