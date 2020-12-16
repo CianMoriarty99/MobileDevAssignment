@@ -119,8 +119,11 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         mVisitRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 
+
+
+
         // Initialize the SDK
-        Places.initialize(getApplicationContext(), "AIzaSyDK0ehr4Dp0f5o9Pfc9sFm7y0Gu1mBlNFY");
+        Places.initialize(getApplicationContext(), "AIzaSyAQ4ZDGyQlHdzmY28GwFEG_JxtPFQ59sAU");
 
         // Create a new Places client instance
         PlacesClient placesClient = Places.createClient(this);
@@ -130,6 +133,12 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         // Specify the types of place data to return.
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+
+
+
+
+
+
 
         CardView cardView = findViewById(R.id.card_view);
 
@@ -248,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                 startActivity(intent);
             }
         });
+
 
 
         // Set up a PlaceSelectionListener to handle the response.
