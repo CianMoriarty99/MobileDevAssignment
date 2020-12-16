@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.location.Location;
@@ -147,8 +148,6 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
             fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
         }
-
-
         mCurrentTemperature = mCurrentPressure = null;
     }
 
@@ -302,38 +301,11 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
             FileAndSense fileAndLoc = new FileAndSense(file, loc, mCurrentTemperature, mCurrentPressure);
             images.add(fileAndLoc);
-
-
-            BitmapDescriptor icon;
-
-           /* try {
-                final BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                // Calculate inSampleSize
-                options.inSampleSize = calculateInSampleSize(options, 1, 1);
-                // Decode bitmap with inSampleSize set
-                options.inJustDecodeBounds = false;
-                Bitmap finalBit = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-                icon = BitmapDescriptorFactory.fromBitmap(finalBit);
-                */
-
-
-            @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
-            drawable.setAlpha(255);
-            Canvas canvas = new Canvas();
-            Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-            canvas.setBitmap(bitmap);
-            drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-            drawable.draw(canvas);
-            icon = BitmapDescriptorFactory.fromBitmap(bitmap);
-
+            BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(ImageHelper.createMapsMarker(this, file));
             MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
                     .title("Photo")
-                    //TODO Show photo thumbnail?
                     .alpha(1.0f)
                     .icon(icon);
-
-
             mMap.addMarker(markerOptions);
         }
     }

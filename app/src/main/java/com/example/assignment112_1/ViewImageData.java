@@ -21,11 +21,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,10 +108,6 @@ public class ViewImageData extends AppCompatActivity implements OnMapReadyCallba
                 }
             }
         });
-
-
-
-
     }
 
     //Save description when the back button is pressed.
@@ -174,10 +172,12 @@ public class ViewImageData extends AppCompatActivity implements OnMapReadyCallba
 
             float[] location = photoData.getLoc();
             LatLng loc = new LatLng(location[0], location[1]);
+
+            BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(ImageHelper.createMapsMarker(this, new File(photoData.getPhotoFile())));
+
             MarkerOptions markerOptions = new MarkerOptions().position(loc)
                     .title(photoData.getPathTitle())
-                    .icon(BitmapDescriptorFactory
-                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                    .icon(icon);
 
             mMap.addMarker(markerOptions);
 

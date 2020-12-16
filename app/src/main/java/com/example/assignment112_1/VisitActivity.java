@@ -20,7 +20,6 @@ import java.util.Date;
 
 public class VisitActivity extends AppCompatActivity {
 
-    public static final String EXTRA_MESSAGE = "uk.ac.shef.oak.com4510.MESSAGE";
     public static final String EMPTY_STRING = "";
 
     @Override

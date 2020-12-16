@@ -27,6 +27,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,14 +89,8 @@ public class ViewVisitData extends AppCompatActivity implements OnMapReadyCallba
                     if (photo.getPathTitle().equals(visitTitle)) {
                         float[] loc = photo.getLoc();
                         LatLng latLngLoc = new LatLng(loc[0], loc[1]);
-                        @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
-                        drawable.setAlpha(255);
-                        Canvas canvas = new Canvas();
-                        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-                        canvas.setBitmap(bitmap);
-                        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-                        drawable.draw(canvas);
-                        BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
+
+                        BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(ImageHelper.createMapsMarker(this, new File(photo.getPhotoFile())));
 
                         MarkerOptions markerOptions = new MarkerOptions().position(latLngLoc)
                                 .title("Photo")

@@ -60,6 +60,7 @@ import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
 
 import android.widget.Button;
+import android.widget.TextView;
 
 
 /**
@@ -81,9 +82,13 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
     private ImageAdapter mImageAdapter;
     private VisitAdapter mVisitAdapter;
     private RecyclerView mVisitRecyclerView, mImageRecyclerView;
-    public static boolean sortByDate, sortByPath, listViewBool, mapBool;
+    public static boolean sortByPath, listViewBool, mapBool;
     private GoogleMap mMap;
     public boolean device_has_camera;
+    private TextView mTitleView;
+    private CardView mCardView;
+    private SupportMapFragment mMapFragment;
+    private List<Integer> mySpanList;
 
 
     @Override
@@ -94,94 +99,66 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         activity = this;
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
 
+        mCardView = findViewById(R.id.card_view);
+        mTitleView = findViewById(R.id.view_title);
+        mImageRecyclerView = findViewById(R.id.recycler_view);
+        mVisitRecyclerView = findViewById(R.id.visit_recycler_view);
+        FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_camera);
+        Button visit_but = findViewById(R.id.button_visit);
+
+        listViewBool = true;
+        mapBool = false;
+        sortByPath = true;
+        mySpanList = new ArrayList<>();
+
+        // Initialize the AutocompleteSupportFragment.
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+
         // required by Android 6.0 +
         checkPermissions(getApplicationContext());
         initEasyImage();
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        mMapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_frag);
-        mapFragment.getMapAsync(this);
+        mMapFragment.getMapAsync(this);
 
-        mImageRecyclerView = findViewById(R.id.recycler_view);
+
         // set up the RecyclerView
         myPictureList = new ArrayList<>();
         mImageAdapter = new ImageAdapter(myPictureList, this);
         mImageRecyclerView.setAdapter(mImageAdapter);
         mImageRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
 
-        mVisitRecyclerView = findViewById(R.id.visit_recycler_view);
         myVisitList = new ArrayList<>();
         mVisitAdapter = new VisitAdapter(myVisitList, this);
         mVisitRecyclerView.setAdapter(mVisitAdapter);
         mVisitRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        mTitleView.setText("Browse Visits: ");
+        mVisitRecyclerView.setVisibility(View.VISIBLE);
+        mImageRecyclerView.setVisibility(View.INVISIBLE);
+        mTitleView.setVisibility(View.VISIBLE);
+        mCardView.setVisibility(View.INVISIBLE);
+        mMapFragment.getView().setVisibility(View.INVISIBLE);
 
         // Initialize the SDK
-        Places.initialize(getApplicationContext(), "AIzaSyDK0ehr4Dp0f5o9Pfc9sFm7y0Gu1mBlNFY");
+        Places.initialize(getApplicationContext(), "AIzaSyCJ97ya3k69cM_Dkp0rd8ZiF4hY1ubKxHw");
 
         // Create a new Places client instance
         PlacesClient placesClient = Places.createClient(this);
 
-        // Initialize the AutocompleteSupportFragment.
-        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
-                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         // Specify the types of place data to return.
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
 
-        CardView cardView = findViewById(R.id.card_view);
-
-        if (listViewBool) {
-            mImageRecyclerView.setVisibility(View.VISIBLE);
-            mVisitRecyclerView.setVisibility(View.INVISIBLE);
-        } else {
-            mVisitRecyclerView.setVisibility(View.VISIBLE);
-            mImageRecyclerView.setVisibility(View.INVISIBLE);
-        }
-        if (mapBool) {
-            cardView.setVisibility(View.VISIBLE);
-            mapFragment.getView().setVisibility(View.VISIBLE);
-            mImageRecyclerView.setVisibility(View.INVISIBLE);
-            mVisitRecyclerView.setVisibility(View.INVISIBLE);
-        } else {
-            cardView.setVisibility(View.INVISIBLE);
-            mapFragment.getView().setVisibility(View.INVISIBLE);
-        }
 
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos -> {
-            try{
-                if (myPictureList.size() > 0) Log.d("PHOTODATA", myPictureList.get(0).getPressure().toString());
-            } catch (Exception e){
-                Log.d("PHOTODATA", "No pictures");
-            }
-
             myPictureList = photos;
-            if (sortByDate) {
-                Collections.sort(myPictureList, (d1, d2) -> {
-                    return d2.getId() - d1.getId();
-                });
-            } else {
-                Collections.sort(myPictureList, (d1, d2) -> {
-                    return d1.getId() - d2.getId();
-                });
-            }
-            if(sortByPath){
-                Collections.sort(myPictureList, (d1, d2) -> {
-                    try {
-                        String path1 = d1.getPathTitle();
-                        String path2 = d2.getPathTitle();
-
-                        int compare = path1.compareTo(path2);
-                        Log.d("SORTBYPATH", String.valueOf(compare));
-                        return compare;
-                    }
-                    catch (Exception e) {
-                        Log.d("SORTBYPATH", "0");
-                        return -1;
-                    }
-                });
-            }
+            sortImageList();
             mImageAdapter.setImages(photos);
             mImageAdapter.notifyDataSetChanged();
         });
@@ -194,18 +171,12 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             mVisitAdapter.notifyDataSetChanged();
         });
 
-        FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
         fabGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 EasyImage.openGallery(getActivity(), 0);
             }
         });
-
-
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_camera);
-
 
 
         PackageManager pm = this.getPackageManager();
@@ -224,14 +195,6 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
         }
 
-
-
-
-
-
-
-
-        Button visit_but = findViewById(R.id.button_visit);
         visit_but.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -287,7 +250,6 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId()) {
 
             case R.id.changeView:
@@ -299,31 +261,69 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                 } else {
                     listViewBool = false;
                 }
-                Log.d("PICTURES", String.valueOf(listViewBool));
-                this.recreate();
-
+                if (listViewBool) {
+                    mTitleView.setText("Browse Visits: ");
+                    mVisitRecyclerView.setVisibility(View.VISIBLE);
+                    mImageRecyclerView.setVisibility(View.INVISIBLE);
+                } else {
+                    mTitleView.setText("Browse Photos: ");
+                    mImageRecyclerView.setVisibility(View.VISIBLE);
+                    mVisitRecyclerView.setVisibility(View.INVISIBLE);
+                }
+                if (mapBool) {
+                    mTitleView.setVisibility(View.INVISIBLE);
+                    mCardView.setVisibility(View.VISIBLE);
+                    mMapFragment.getView().setVisibility(View.VISIBLE);
+                    mImageRecyclerView.setVisibility(View.INVISIBLE);
+                    mVisitRecyclerView.setVisibility(View.INVISIBLE);
+                } else {
+                    mTitleView.setVisibility(View.VISIBLE);
+                    mCardView.setVisibility(View.INVISIBLE);
+                    mMapFragment.getView().setVisibility(View.INVISIBLE);
+                }
 
             case R.id.dateSort:
                 sortByPath = false;
-                sortByDate = !sortByDate;
-                Log.d("PICTURES", String.valueOf(sortByDate));
-                this.recreate();
-                return true;
+                sortImageList();
+                mImageAdapter.notifyDataSetChanged();
+
 
             case R.id.pathSort:
-                sortByPath = !sortByPath;
-                sortByDate = false;
-                Log.d("PICTURES", String.valueOf(sortByPath));
-                this.recreate();
-                return true;
-
-
+                sortByPath = true;
+                sortImageList();
+                mImageAdapter.notifyDataSetChanged();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    public void sortImageList() {
+        if (!sortByPath) {
+            Collections.sort(myPictureList, (d1, d2) -> {
+                return d2.getId() - d1.getId();
+            });
+        } else {
+            Collections.sort(myPictureList, (d1, d2) -> {
+                return d1.getId() - d2.getId();
+            });
+        }
+        if(sortByPath){
+            Collections.sort(myPictureList, (d1, d2) -> {
+                try {
+                    String path1 = d1.getPathTitle();
+                    String path2 = d2.getPathTitle();
 
+                    int compare = path1.compareTo(path2);
+                    Log.d("SORTBYPATH", String.valueOf(compare));
+                    return compare;
+                }
+                catch (Exception e) {
+                    Log.d("SORTBYPATH", "0");
+                    return -1;
+                }
+            });
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -513,13 +513,6 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(R.drawable.ic_baseline_camera_alt_24, getTheme());
-        Canvas canvas = new Canvas();
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        canvas.setBitmap(bitmap);
-        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-        drawable.draw(canvas);
-        BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
         initLocations();
@@ -528,9 +521,10 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
             for (PhotoData data : myPictureList) {
                 if (data.getLoc().length > 0) {
+                    BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(ImageHelper.createMapsMarker(this, new File(data.getPhotoFile())));
+
                     MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(data.getLoc()[0], data.getLoc()[1]))
                             .title(data.getPathTitle())
-                            //TODO Show photo thumbnail?
                             .alpha(1.0f)
                             .icon(icon);
 
