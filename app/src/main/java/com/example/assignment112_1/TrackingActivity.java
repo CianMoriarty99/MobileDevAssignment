@@ -3,6 +3,7 @@ package com.example.assignment112_1;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -19,6 +20,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -122,12 +125,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
         mButtonStop = (Button) findViewById(R.id.button_stop);
         mButtonStop.setOnClickListener((view) -> {
-            stopLocationUpdates();
-            saveVisit();
-            Intent intent = new Intent();
-            intent.putExtra("exampleName", "exampleValue");
-            setResult(RESULT_OK, intent);
-            finish();
+            stopActivity(true);
         });
         mButtonStop.setEnabled(true);
 
@@ -150,6 +148,38 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
 
         mCurrentTemperature = mCurrentPressure = null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        builder.setTitle("Finish Visit?");
+        builder.setMessage("Do you want to end and save this visit? ");
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                stopActivity(true);
+            }
+        });
+        builder.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                stopActivity(false);
+            }
+        });
+        builder.show();
+    }
+
+    /**
+     * Goes through all the steps to gracefully close the activity and return to the previous one.
+     */
+    private void stopActivity(boolean isSaved) {
+        stopLocationUpdates();
+        if (isSaved)
+            saveVisit();
+        Intent intent = new Intent();
+        intent.putExtra("exampleName", "exampleValue");
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     /**
