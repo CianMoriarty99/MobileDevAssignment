@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             mImageAdapter.notifyDataSetChanged();
         });
 
+        invalidateOptionsMenu();
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
@@ -288,6 +289,23 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         inflater.inflate(R.menu.example_men, menu);
         return true;
     }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        if(mapBool){
+            menu.findItem(R.id.dateSort).setEnabled(false);
+            menu.findItem(R.id.pathSort).setEnabled(false);
+
+        }
+        else{
+            menu.findItem(R.id.dateSort).setEnabled(true);
+            menu.findItem(R.id.pathSort).setEnabled(true);
+        }
+
+        return true;
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
