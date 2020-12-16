@@ -315,12 +315,14 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                     mCardView.setVisibility(View.INVISIBLE);
                     mMapFragment.getView().setVisibility(View.INVISIBLE);
                 }
+                return true;
 
             case R.id.dateSort:
                 sortByPath = false;
                 sortImageList();
                 sortVisitList();
                 mImageAdapter.notifyDataSetChanged();
+                return true;
 
 
             case R.id.pathSort:
@@ -328,6 +330,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                 sortImageList();
                 sortVisitList();
                 mImageAdapter.notifyDataSetChanged();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
