@@ -289,7 +289,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
             images.add(fileAndLoc);
 
 
-            BitmapDescriptor icon = null;
+            BitmapDescriptor icon;
 
            /* try {
                 final BitmapFactory.Options options = new BitmapFactory.Options();

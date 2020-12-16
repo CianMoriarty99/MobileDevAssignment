@@ -50,7 +50,7 @@ public class ViewImageData extends AppCompatActivity implements OnMapReadyCallba
 
         setContentView(R.layout.activity_view_image);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.fragment_visit_map);
+                .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
 

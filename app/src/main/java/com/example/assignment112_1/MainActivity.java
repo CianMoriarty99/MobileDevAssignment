@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         mVisitRecyclerView.setAdapter(mVisitAdapter);
         mVisitRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+
         // Initialize the SDK
         Places.initialize(getApplicationContext(), "AIzaSyDK0ehr4Dp0f5o9Pfc9sFm7y0Gu1mBlNFY");
 
@@ -147,8 +148,6 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos -> {
-
-
             try{
                 if (myPictureList.size() > 0) Log.d("PHOTODATA", myPictureList.get(0).getPressure().toString());
             } catch (Exception e){
@@ -503,10 +502,6 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
         initLocations();
-
-
-
-
 
         try{
 
