@@ -14,6 +14,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,6 +28,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -263,6 +265,22 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             }
         });
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (LocationService.class.getName().equals(service.service.getClassName())) {
+                int requestCode = 0;
+                Intent intent = new Intent(this, TrackingActivity.class);
+                intent.putExtra("Title", VisitActivity.title);
+                TrackingActivity.timer.cancel();
+                startActivityForResult(intent, requestCode);
+                Log.i("SERVICES", "LocationService is ACTIVE");
+            }
+        }
     }
 
     @Override

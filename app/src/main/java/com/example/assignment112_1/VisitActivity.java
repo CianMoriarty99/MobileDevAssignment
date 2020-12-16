@@ -29,6 +29,7 @@ public class VisitActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "uk.ac.shef.oak.com4510.MESSAGE";
     public static final String EMPTY_STRING = "";
     private String duplicateVisitNames;
+    public static String title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,18 +54,19 @@ public class VisitActivity extends AppCompatActivity {
      * @param view
      */
     public void startVisit(View view) {
-        int requestCode = 0;
-        Intent intent = new Intent(this, TrackingActivity.class);
         EditText visit_title = (EditText) findViewById(R.id.visit_title);
-        String title = visit_title.getText().toString();
+        title = visit_title.getText().toString();
 
         if (title.equals(EMPTY_STRING)) {
             Toast.makeText(this, "Title cannot be empty!", Toast.LENGTH_SHORT).show();
         } else if (isDuplicateTitle(title)) {
             Toast.makeText(this, "Visit title already exists!", Toast.LENGTH_SHORT).show();
         } else {
-            intent.putExtra("Title", title);
             visit_title.setText("");
+            int requestCode = 0;
+            Intent intent = new Intent(this, TrackingActivity.class);
+            intent.putExtra("Title", title);
+            TrackingActivity.secondsElapsed[0] = 0;
             startActivityForResult(intent, requestCode);
         }
     }
