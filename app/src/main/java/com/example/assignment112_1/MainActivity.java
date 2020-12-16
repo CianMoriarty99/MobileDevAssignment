@@ -342,18 +342,14 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         }
         if(sortByPath){
             Collections.sort(myPictureList, (d1, d2) -> {
-                try {
-                    String path1 = d1.getPathTitle();
-                    String path2 = d2.getPathTitle();
+                String path1 = d1.getPathTitle();
+                String path2 = d2.getPathTitle();
+                if (path1 == null) path1 = "zz";
+                if (path2 == null) path2 = "zz";
 
-                    int compare = path1.compareTo(path2);
-                    Log.d("SORTBYPATH", String.valueOf(compare));
-                    return compare;
-                }
-                catch (Exception e) {
-                    Log.d("SORTBYPATH", "0");
-                    return -1;
-                }
+                int compare = path1.compareTo(path2);
+                return compare;
+
             });
         }
     }
