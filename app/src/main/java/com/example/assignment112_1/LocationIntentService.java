@@ -30,6 +30,8 @@ import java.util.List;
  * This class provides necessary functionality to handle data used by LocationService.
  */
 
+
+
 public class LocationIntentService extends IntentService {
     private List<Location> locations;
 
@@ -40,6 +42,10 @@ public class LocationIntentService extends IntentService {
     public LocationIntentService() {
         super("Location Intent");
     }
+
+
+
+
 
     /**
      * Called to extract the location and sensor data to put it in a Visit Point. The visit points
@@ -80,7 +86,12 @@ public class LocationIntentService extends IntentService {
                                         TrackingActivity.getMap().addMarker(new MarkerOptions().position(loc)
                                                 .title(DateFormat.getTimeInstance().format(new Date())));
                                         // it centres the camera around the new location and zooms in
+
+                                    if(MainActivity.hasCentredForTracking == false){
                                         TrackingActivity.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 18.0f));
+                                        MainActivity.hasCentredForTracking = true;
+                                    }
+
 
                                         //Draws the route
                                         List<VisitPoint> pointsList = TrackingActivity.getPointsList();

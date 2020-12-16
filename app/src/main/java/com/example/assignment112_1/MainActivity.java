@@ -14,6 +14,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,9 +22,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -82,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
     private ImageAdapter mImageAdapter;
     private VisitAdapter mVisitAdapter;
     private RecyclerView mVisitRecyclerView, mImageRecyclerView;
-    public static boolean sortByPath, listViewBool, mapBool;
+    public static boolean sortByDate, sortByPath, listViewBool, mapBool, hasCentredForTracking;
     private GoogleMap mMap;
     public boolean device_has_camera;
     private TextView mTitleView;
@@ -91,10 +96,12 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
     private List<Integer> mySpanList;
 
 
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        hasCentredForTracking = false;
         setContentView(R.layout.activity_main);
         activity = this;
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
@@ -107,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_camera);
         Button visit_but = findViewById(R.id.button_visit);
 
-        listViewBool = true;
+        listViewBool = false;
         mapBool = false;
         sortByPath = true;
         mySpanList = new ArrayList<>();
@@ -138,8 +145,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         mVisitRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         mTitleView.setText("Browse Visits: ");
-        mVisitRecyclerView.setVisibility(View.VISIBLE);
-        mImageRecyclerView.setVisibility(View.INVISIBLE);
+        mVisitRecyclerView.setVisibility(View.INVISIBLE);
+        mImageRecyclerView.setVisibility(View.VISIBLE);
         mTitleView.setVisibility(View.VISIBLE);
         mCardView.setVisibility(View.INVISIBLE);
         mMapFragment.getView().setVisibility(View.INVISIBLE);
@@ -154,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
 
 
-
         //Retrieve and observe photo data in U.I
         model.getPhotoData().observe(this, photos -> {
             myPictureList = photos;
@@ -163,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             mImageAdapter.notifyDataSetChanged();
         });
 
+        invalidateOptionsMenu();
 
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
@@ -171,56 +178,65 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             mVisitAdapter.notifyDataSetChanged();
         });
 
-        fabGallery.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EasyImage.openGallery(getActivity(), 0);
-            }
-        });
+
+        fabGallery.setOnClickListener(view -> EasyImage.openGallery(getActivity(), 0));
 
 
         PackageManager pm = this.getPackageManager();
 
-        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
 
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    EasyImage.openCamera(getActivity(), 0);
-                }
-            });
+            fab.setOnClickListener(view -> EasyImage.openCamera(getActivity(), 0));
         }
         else{
-
             fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+
         }
 
-        visit_but.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), VisitActivity.class);
-                startActivity(intent);
+
+        visit_but.setOnClickListener(view -> {
+            List<String> previousVisitNames = new ArrayList<>();
+            for (VisitData vd : myVisitList) {
+                previousVisitNames.add(vd.getTitle());
             }
+            Intent intent = new Intent(getActivity(), VisitActivity.class);
+            intent.putExtra("Names", String.valueOf(previousVisitNames));
+            startActivity(intent);
         });
+
 
 
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
-                if (place != null)
                     // TODO: Get info about the selected place.
                     Log.i("SEARCHBAR", "Place: " + place.getName() + ", " + place.getId());
             }
 
             @Override
             public void onError(@NonNull Status status) {
-                if (status != null)
                     // TODO: Handle the error.
                     Log.i("SEARCHBAR", "An error occurred: " + status);
             }
         });
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (LocationService.class.getName().equals(service.service.getClassName())) {
+                int requestCode = 0;
+                Intent intent = new Intent(this, TrackingActivity.class);
+                intent.putExtra("Title", VisitActivity.title);
+                TrackingActivity.timer.cancel();
+                startActivityForResult(intent, requestCode);
+                Log.i("SERVICES", "LocationService is ACTIVE");
+            }
+        }
     }
 
     @Override
@@ -247,6 +263,23 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         inflater.inflate(R.menu.example_men, menu);
         return true;
     }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        if(mapBool){
+            menu.findItem(R.id.dateSort).setEnabled(false);
+            menu.findItem(R.id.pathSort).setEnabled(false);
+
+        }
+        else{
+            menu.findItem(R.id.dateSort).setEnabled(true);
+            menu.findItem(R.id.pathSort).setEnabled(true);
+        }
+
+        return true;
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -379,12 +412,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                     alertBuilder.setCancelable(true);
                     alertBuilder.setTitle("Permission necessary");
                     alertBuilder.setMessage("External storage permission is necessary");
-                    alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
-                        }
-                    });
+                    alertBuilder.setPositiveButton(android.R.string.yes, (dialog, which) ->
+                            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE));
                     AlertDialog alert = alertBuilder.create();
                     alert.show();
 
@@ -399,12 +428,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                     alertBuilder.setCancelable(true);
                     alertBuilder.setTitle("Permission necessary");
                     alertBuilder.setMessage("Writing external storage permission is necessary");
-                    alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
-                        }
-                    });
+                    alertBuilder.setPositiveButton(android.R.string.yes, (dialog, which) ->
+                            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE));
                     AlertDialog alert = alertBuilder.create();
                     alert.show();
 

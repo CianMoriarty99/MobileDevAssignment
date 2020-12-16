@@ -2,24 +2,21 @@ package com.example.assignment112_1;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -40,6 +37,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
@@ -63,6 +63,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private List<FileAndSense> images;
     private static Location mCurrentLocation;
     private static Float mCurrentPressure, mCurrentTemperature;
+    public static final int[] secondsElapsed = {0};
+    public static Timer timer;
 
 
     public static void setActivity(AppCompatActivity activity) {
@@ -123,12 +125,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
         mButtonStop = (Button) findViewById(R.id.button_stop);
         mButtonStop.setOnClickListener((view) -> {
-            stopLocationUpdates();
-            saveVisit();
-            Intent intent = new Intent();
-            intent.putExtra("exampleName", "exampleValue");
-            setResult(RESULT_OK, intent);
-            finish();
+            stopTrackingVisit(true);
         });
         mButtonStop.setEnabled(true);
 
@@ -148,7 +145,59 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
             fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
         }
+
+
+        displayElapsedTime();
+
         mCurrentTemperature = mCurrentPressure = null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        builder.setTitle("Finish Visit?");
+        builder.setMessage("Do you want to end and save this visit? ");
+        builder.setPositiveButton("Save", (dialog, id) -> stopTrackingVisit(true));
+        builder.setNegativeButton("Discard", (dialog, id) -> stopTrackingVisit(false));
+        builder.show();
+    }
+
+    /**
+     * Goes through all the steps to gracefully close the activity and return to the previous one.
+     */
+    private void stopTrackingVisit(boolean isSaved) {
+        Intent intent = new Intent();
+        intent.putExtra("CurrentName", title);
+        intent.putExtra("CurrentDuration", secondsElapsed);
+        stopLocationUpdates();
+        if (isSaved) {
+            saveVisit();
+            setResult(RESULT_OK, intent);
+        } else {
+            setResult(RESULT_CANCELED, intent);
+        }
+        TrackingActivity.timer.cancel();
+        finish();
+    }
+
+    /**
+     * Displays the elapsed time in seconds for the current visit.
+     */
+    private void displayElapsedTime() {
+        TextView elapsedTimeDisplay = (TextView) findViewById(R.id.elapsed_time);
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                int hours = secondsElapsed[0] / 3600;
+                int minutes = (secondsElapsed[0] % 3600) / 60;
+                int seconds = secondsElapsed[0] % 60;
+                String time = String.format(Locale.getDefault(),"%d:%02d:%02d", hours, minutes, seconds);
+                secondsElapsed[0]++;
+                getActivity().runOnUiThread(() -> elapsedTimeDisplay.setText(time));
+            }
+        }, 0, 1000);
     }
 
     /**

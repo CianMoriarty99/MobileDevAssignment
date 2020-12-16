@@ -10,9 +10,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.example.assignment112_1.model.PhotoRepository;
+import com.example.assignment112_1.model.PhotoViewModel;
+import com.example.assignment112_1.model.VisitData;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class provides the user interface needed by the user to start tracking a visit.
@@ -21,6 +27,8 @@ import java.util.Date;
 public class VisitActivity extends AppCompatActivity {
 
     public static final String EMPTY_STRING = "";
+    private String duplicateVisitNames;
+    public static String title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,14 +53,40 @@ public class VisitActivity extends AppCompatActivity {
      * @param view
      */
     public void startVisit(View view) {
-        Intent intent = new Intent(this, TrackingActivity.class);
         EditText visit_title = (EditText) findViewById(R.id.visit_title);
-        String title = visit_title.getText().toString();
+        title = visit_title.getText().toString();
+
         if (title.equals(EMPTY_STRING)) {
             Toast.makeText(this, "Title cannot be empty!", Toast.LENGTH_SHORT).show();
+        } else if (isDuplicateTitle(title)) {
+            Toast.makeText(this, "Visit title already exists!", Toast.LENGTH_SHORT).show();
         } else {
+            visit_title.setText("");
+            int requestCode = 1;
+            Intent intent = new Intent(this, TrackingActivity.class);
             intent.putExtra("Title", title);
-            startActivity(intent);
+            TrackingActivity.secondsElapsed[0] = 0;
+            startActivityForResult(intent, requestCode);
+        }
+    }
+
+    /**
+     * Checks the database for duplicate visit titles
+     * @param title the title of the current visit
+     * @return whether or not the given title already exists in the database
+     */
+    private boolean isDuplicateTitle(String title) {
+        duplicateVisitNames = getIntent().getStringExtra("Names");
+        return duplicateVisitNames.contains(title);
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            duplicateVisitNames += (", " + data.getStringExtra("CurrentName"));
+            finish();
         }
     }
 }
