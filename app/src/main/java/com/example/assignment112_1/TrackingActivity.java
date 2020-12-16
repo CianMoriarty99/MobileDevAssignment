@@ -156,16 +156,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
         builder.setTitle("Finish Visit?");
         builder.setMessage("Do you want to end and save this visit? ");
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                stopActivity(true);
-            }
-        });
-        builder.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                stopActivity(false);
-            }
-        });
+        builder.setPositiveButton("Save", (dialog, id) -> stopActivity(true));
+        builder.setNegativeButton("Discard", (dialog, id) -> stopActivity(false));
         builder.show();
     }
 
@@ -173,12 +165,15 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
      * Goes through all the steps to gracefully close the activity and return to the previous one.
      */
     private void stopActivity(boolean isSaved) {
-        stopLocationUpdates();
-        if (isSaved)
-            saveVisit();
         Intent intent = new Intent();
-        intent.putExtra("exampleName", "exampleValue");
-        setResult(RESULT_OK, intent);
+        intent.putExtra("CurrentName", title);
+        stopLocationUpdates();
+        if (isSaved) {
+            saveVisit();
+            setResult(RESULT_OK, intent);
+        } else {
+            setResult(RESULT_CANCELED, intent);
+        }
         finish();
     }
 

@@ -53,9 +53,11 @@ public class VisitActivity extends AppCompatActivity {
      * @param view
      */
     public void startVisit(View view) {
+        int requestCode = 0;
         Intent intent = new Intent(this, TrackingActivity.class);
         EditText visit_title = (EditText) findViewById(R.id.visit_title);
         String title = visit_title.getText().toString();
+
         if (title.equals(EMPTY_STRING)) {
             Toast.makeText(this, "Title cannot be empty!", Toast.LENGTH_SHORT).show();
         } else if (isDuplicateTitle(title)) {
@@ -63,7 +65,7 @@ public class VisitActivity extends AppCompatActivity {
         } else {
             intent.putExtra("Title", title);
             visit_title.setText("");
-            startActivity(intent);
+            startActivityForResult(intent, requestCode);
         }
     }
 
@@ -75,5 +77,15 @@ public class VisitActivity extends AppCompatActivity {
     private boolean isDuplicateTitle(String title) {
         duplicateVisitNames = getIntent().getStringExtra("Names");
         return duplicateVisitNames.contains(title);
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            duplicateVisitNames += (", " + data.getStringExtra("CurrentName"));
+            finish();
+        }
     }
 }
