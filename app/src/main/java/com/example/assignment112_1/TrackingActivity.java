@@ -2,27 +2,19 @@ package com.example.assignment112_1;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.PowerManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -41,7 +33,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -133,7 +124,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
         mButtonStop = (Button) findViewById(R.id.button_stop);
         mButtonStop.setOnClickListener((view) -> {
-            stopActivity(true);
+            stopTrackingVisit(true);
         });
         mButtonStop.setEnabled(true);
 
@@ -165,15 +156,15 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
 
         builder.setTitle("Finish Visit?");
         builder.setMessage("Do you want to end and save this visit? ");
-        builder.setPositiveButton("Save", (dialog, id) -> stopActivity(true));
-        builder.setNegativeButton("Discard", (dialog, id) -> stopActivity(false));
+        builder.setPositiveButton("Save", (dialog, id) -> stopTrackingVisit(true));
+        builder.setNegativeButton("Discard", (dialog, id) -> stopTrackingVisit(false));
         builder.show();
     }
 
     /**
      * Goes through all the steps to gracefully close the activity and return to the previous one.
      */
-    private void stopActivity(boolean isSaved) {
+    private void stopTrackingVisit(boolean isSaved) {
         Intent intent = new Intent();
         intent.putExtra("CurrentName", title);
         intent.putExtra("CurrentDuration", secondsElapsed);
@@ -184,6 +175,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         } else {
             setResult(RESULT_CANCELED, intent);
         }
+        TrackingActivity.timer.cancel();
         finish();
     }
 
