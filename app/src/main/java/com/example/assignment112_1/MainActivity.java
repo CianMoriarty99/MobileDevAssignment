@@ -21,9 +21,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -210,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
         PackageManager pm = this.getPackageManager();
 
-        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
 
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -220,9 +223,10 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             });
         }
         else{
-
             fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+
         }
+
 
 
 
