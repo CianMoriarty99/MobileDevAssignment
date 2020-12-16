@@ -71,6 +71,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private List<FileAndSense> images;
     private static Location mCurrentLocation;
     private static Float mCurrentPressure, mCurrentTemperature;
+    public static final int[] secondsElapsed = {0};
+    public static Timer timer;
 
 
     public static void setActivity(AppCompatActivity activity) {
@@ -174,6 +176,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
     private void stopActivity(boolean isSaved) {
         Intent intent = new Intent();
         intent.putExtra("CurrentName", title);
+        intent.putExtra("CurrentDuration", secondsElapsed);
         stopLocationUpdates();
         if (isSaved) {
             saveVisit();
@@ -188,9 +191,8 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
      * Displays the elapsed time in seconds for the current visit.
      */
     private void displayElapsedTime() {
-        final int[] secondsElapsed = {0};
         TextView elapsedTimeDisplay = (TextView) findViewById(R.id.elapsed_time);
-        Timer timer = new Timer();
+        timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
