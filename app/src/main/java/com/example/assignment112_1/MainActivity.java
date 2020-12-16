@@ -250,13 +250,13 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onPlaceSelected(@NonNull Place place) {=
+            public void onPlaceSelected(@NonNull Place place) {
                     // TODO: Get info about the selected place.
                     Log.i("SEARCHBAR", "Place: " + place.getName() + ", " + place.getId());
             }
 
             @Override
-            public void onError(@NonNull Status status) {=
+            public void onError(@NonNull Status status) {
                     // TODO: Handle the error.
                     Log.i("SEARCHBAR", "An error occurred: " + status);
             }
@@ -383,12 +383,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                     alertBuilder.setCancelable(true);
                     alertBuilder.setTitle("Permission necessary");
                     alertBuilder.setMessage("External storage permission is necessary");
-                    alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
-                        }
-                    });
+                    alertBuilder.setPositiveButton(android.R.string.yes, (dialog, which) ->
+                            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE));
                     AlertDialog alert = alertBuilder.create();
                     alert.show();
 
@@ -403,12 +399,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                     alertBuilder.setCancelable(true);
                     alertBuilder.setTitle("Permission necessary");
                     alertBuilder.setMessage("Writing external storage permission is necessary");
-                    alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
-                        }
-                    });
+                    alertBuilder.setPositiveButton(android.R.string.yes, (dialog, which) ->
+                            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE));
                     AlertDialog alert = alertBuilder.create();
                     alert.show();
 
