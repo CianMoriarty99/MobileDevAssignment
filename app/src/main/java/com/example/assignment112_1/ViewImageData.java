@@ -32,7 +32,7 @@ import java.util.List;
 import static com.example.assignment112_1.TrackingActivity.getActivity;
 
 /**
- * This class provides a display for one full image at a time.
+ * This class provides methods and properties for showing an Image's details upon inspection.
  */
 
 public class ViewImageData extends AppCompatActivity implements OnMapReadyCallback {

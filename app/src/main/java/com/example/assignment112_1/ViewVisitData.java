@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class provides a display for one full image at a time.
+ * This class provides methods and properties for showing all visits on a Map.
  */
 
 public class ViewVisitData extends AppCompatActivity implements OnMapReadyCallback {

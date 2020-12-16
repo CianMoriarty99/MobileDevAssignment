@@ -14,6 +14,12 @@ import com.example.assignment112_1.model.VisitData;
 
 import java.util.List;
 
+/**
+ * This class provides the functionality required to display the visit paths taken by the user in a
+ * list format.
+ */
+
+
 public class VisitAdapter extends RecyclerView.Adapter<VisitAdapter.View_Holder>  {
     private List<VisitData> visits;
     private final VisitListener mVisitListener;
