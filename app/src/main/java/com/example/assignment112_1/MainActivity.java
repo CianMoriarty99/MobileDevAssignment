@@ -174,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         //Retrieve and observe photo data in U.I
         model.getVisitData().observe(this, visits -> {
             myVisitList = visits;
+            sortVisitList();
             mVisitAdapter.setVisits(visits);
             mVisitAdapter.notifyDataSetChanged();
         });
@@ -318,12 +319,14 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
             case R.id.dateSort:
                 sortByPath = false;
                 sortImageList();
+                sortVisitList();
                 mImageAdapter.notifyDataSetChanged();
 
 
             case R.id.pathSort:
                 sortByPath = true;
                 sortImageList();
+                sortVisitList();
                 mImageAdapter.notifyDataSetChanged();
         }
 
@@ -334,10 +337,6 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         if (!sortByPath) {
             Collections.sort(myPictureList, (d1, d2) -> {
                 return d2.getId() - d1.getId();
-            });
-        } else {
-            Collections.sort(myPictureList, (d1, d2) -> {
-                return d1.getId() - d2.getId();
             });
         }
         if(sortByPath){
@@ -350,6 +349,21 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
                 int compare = path1.compareTo(path2);
                 return compare;
 
+            });
+        }
+    }
+
+    public void sortVisitList() {
+        if (!sortByPath) {
+            Collections.sort(myVisitList, (d1, d2) -> d2.getDateTime().compareTo(d1.getDateTime()));
+        }
+        if(sortByPath){
+            Collections.sort(myVisitList, (d1, d2) -> {
+                String path1 = d1.getTitle();
+                String path2 = d2.getTitle();
+
+                int compare = path1.compareTo(path2);
+                return compare;
             });
         }
     }
