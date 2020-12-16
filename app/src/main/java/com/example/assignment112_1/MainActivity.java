@@ -207,12 +207,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         });
 
         FloatingActionButton fabGallery = (FloatingActionButton) findViewById(R.id.fab_gallery);
-        fabGallery.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EasyImage.openGallery(getActivity(), 0);
-            }
-        });
+        fabGallery.setOnClickListener(view -> EasyImage.openGallery(getActivity(), 0));
 
 
 
@@ -224,12 +219,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
         if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
 
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    EasyImage.openCamera(getActivity(), 0);
-                }
-            });
+            fab.setOnClickListener(view -> EasyImage.openCamera(getActivity(), 0));
         }
         else{
             fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
@@ -245,17 +235,14 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
 
         Button visit_but = findViewById(R.id.button_visit);
-        visit_but.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                List<String> previousVisitNames = new ArrayList<>();
-                for (VisitData vd : myVisitList) {
-                    previousVisitNames.add(vd.getTitle());
-                }
-                Intent intent = new Intent(getActivity(), VisitActivity.class);
-                intent.putExtra("Names", String.valueOf(previousVisitNames));
-                startActivity(intent);
+        visit_but.setOnClickListener(view -> {
+            List<String> previousVisitNames = new ArrayList<>();
+            for (VisitData vd : myVisitList) {
+                previousVisitNames.add(vd.getTitle());
             }
+            Intent intent = new Intent(getActivity(), VisitActivity.class);
+            intent.putExtra("Names", String.valueOf(previousVisitNames));
+            startActivity(intent);
         });
 
 
@@ -263,15 +250,13 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onPlaceSelected(@NonNull Place place) {
-                if (place != null)
+            public void onPlaceSelected(@NonNull Place place) {=
                     // TODO: Get info about the selected place.
                     Log.i("SEARCHBAR", "Place: " + place.getName() + ", " + place.getId());
             }
 
             @Override
-            public void onError(@NonNull Status status) {
-                if (status != null)
+            public void onError(@NonNull Status status) {=
                     // TODO: Handle the error.
                     Log.i("SEARCHBAR", "An error occurred: " + status);
             }
