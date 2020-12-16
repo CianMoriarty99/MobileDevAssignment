@@ -239,7 +239,12 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
         visit_but.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                List<String> previousVisitNames = new ArrayList<>();
+                for (VisitData vd : myVisitList) {
+                    previousVisitNames.add(vd.getTitle());
+                }
                 Intent intent = new Intent(getActivity(), VisitActivity.class);
+                intent.putExtra("Names", String.valueOf(previousVisitNames));
                 startActivity(intent);
             }
         });

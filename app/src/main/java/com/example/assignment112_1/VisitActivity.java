@@ -10,9 +10,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.example.assignment112_1.model.PhotoRepository;
+import com.example.assignment112_1.model.PhotoViewModel;
+import com.example.assignment112_1.model.VisitData;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class provides the user interface needed by the user to start tracking a visit.
@@ -22,6 +28,7 @@ public class VisitActivity extends AppCompatActivity {
 
     public static final String EXTRA_MESSAGE = "uk.ac.shef.oak.com4510.MESSAGE";
     public static final String EMPTY_STRING = "";
+    private String duplicateVisitNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +58,22 @@ public class VisitActivity extends AppCompatActivity {
         String title = visit_title.getText().toString();
         if (title.equals(EMPTY_STRING)) {
             Toast.makeText(this, "Title cannot be empty!", Toast.LENGTH_SHORT).show();
+        } else if (isDuplicateTitle(title)) {
+            Toast.makeText(this, "Visit title already exists!", Toast.LENGTH_SHORT).show();
         } else {
             intent.putExtra("Title", title);
+            visit_title.setText("");
             startActivity(intent);
         }
+    }
+
+    /**
+     * Checks the database for duplicate visit titles
+     * @param title the title of the current visit
+     * @return whether or not the given title already exists in the database
+     */
+    private boolean isDuplicateTitle(String title) {
+        duplicateVisitNames = getIntent().getStringExtra("Names");
+        return duplicateVisitNames.contains(title);
     }
 }
