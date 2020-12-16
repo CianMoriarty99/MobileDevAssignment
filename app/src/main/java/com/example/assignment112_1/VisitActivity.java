@@ -3,9 +3,11 @@ package com.example.assignment112_1;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -19,6 +21,7 @@ import java.util.Date;
 public class VisitActivity extends AppCompatActivity {
 
     public static final String EXTRA_MESSAGE = "uk.ac.shef.oak.com4510.MESSAGE";
+    public static final String EMPTY_STRING = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +49,11 @@ public class VisitActivity extends AppCompatActivity {
         Intent intent = new Intent(this, TrackingActivity.class);
         EditText visit_title = (EditText) findViewById(R.id.visit_title);
         String title = visit_title.getText().toString();
-        intent.putExtra("Title", title);
-        startActivity(intent);
+        if (title.equals(EMPTY_STRING)) {
+            Toast.makeText(this, "Title cannot be empty!", Toast.LENGTH_SHORT).show();
+        } else {
+            intent.putExtra("Title", title);
+            startActivity(intent);
+        }
     }
 }

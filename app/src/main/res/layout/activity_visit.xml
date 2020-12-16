@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="32dp"
     tools:context=".VisitActivity">
 
     <LinearLayout
@@ -18,7 +19,7 @@
             android:layout_margin="16dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="New Visit"
+            android:text="@string/new_visit"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
@@ -29,7 +30,7 @@
             android:layout_margin="16dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Title"
+            android:text="@string/title"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
@@ -41,7 +42,7 @@
             android:layout_margin="16dp"
             android:layout_weight="1"
             android:gravity="bottom"
-            android:hint="insert a title"
+            android:hint="@string/title_placeholder"
             android:inputType="text" />
 
         <TextView
@@ -71,7 +72,7 @@
             android:textAlignment="center"
             android:layout_weight="1"
             android:layout_margin="16dp"
-            android:text="Start"
+            android:text="@string/start"
             android:onClick="startVisit" />
     </LinearLayout>
 

@@ -19,8 +19,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -75,13 +77,13 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
     private Activity activity;
     private PhotoViewModel model;
     private List<PhotoData> myPictureList;
-    private List<VisitData> myVisitList;
+    public static List<VisitData> myVisitList;
     private ImageAdapter mImageAdapter;
     private VisitAdapter mVisitAdapter;
     private RecyclerView mVisitRecyclerView, mImageRecyclerView;
     public static boolean sortByDate, sortByPath, listViewBool, mapBool;
     private GoogleMap mMap;
-    public static List<VisitData> mVisitList;
+    public boolean device_has_camera;
 
 
     @Override
@@ -203,12 +205,31 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_camera);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EasyImage.openCamera(getActivity(), 0);
-            }
-        });
+
+
+
+        PackageManager pm = this.getPackageManager();
+
+        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    EasyImage.openCamera(getActivity(), 0);
+                }
+            });
+        }
+        else{
+
+            fab.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+        }
+
+
+
+
+
+
+
 
         Button visit_but = findViewById(R.id.button_visit);
         visit_but.setOnClickListener(new View.OnClickListener() {
