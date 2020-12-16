@@ -84,15 +84,15 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
     private ImageAdapter mImageAdapter;
     private VisitAdapter mVisitAdapter;
     private RecyclerView mVisitRecyclerView, mImageRecyclerView;
-    public static boolean sortByDate, sortByPath, listViewBool, mapBool;
+    public static boolean sortByDate, sortByPath, listViewBool, mapBool, hasCentredForTracking;
     private GoogleMap mMap;
-    public boolean device_has_camera;
+
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        hasCentredForTracking = false;
         setContentView(R.layout.activity_main);
         activity = this;
         model = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(PhotoViewModel.class);
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.Imag
 
 
         // Initialize the SDK
-        Places.initialize(getApplicationContext(), "AIzaSyAQ4ZDGyQlHdzmY28GwFEG_JxtPFQ59sAU");
+        Places.initialize(getApplicationContext(), "AIzaSyCJ97ya3k69cM_Dkp0rd8ZiF4hY1ubKxHw");
 
         // Create a new Places client instance
         PlacesClient placesClient = Places.createClient(this);

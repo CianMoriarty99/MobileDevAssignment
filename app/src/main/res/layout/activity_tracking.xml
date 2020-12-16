@@ -20,11 +20,10 @@
         <TextView
             android:id="@+id/elapsed_time"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="20dp"
             android:layout_gravity="center"
             android:textAlignment="center"
-            android:layout_weight="1"
-            android:layout_margin="16dp" />
+            android:layout_margin="10dp" />
 
         <fragment
             android:id="@+id/map"
