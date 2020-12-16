@@ -184,6 +184,7 @@ public class TrackingActivity extends AppCompatActivity implements OnMapReadyCal
         } else {
             setResult(RESULT_CANCELED, intent);
         }
+        TrackingActivity.timer.cancel();
         finish();
     }
 

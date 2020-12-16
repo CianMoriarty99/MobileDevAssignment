@@ -63,7 +63,7 @@ public class VisitActivity extends AppCompatActivity {
             Toast.makeText(this, "Visit title already exists!", Toast.LENGTH_SHORT).show();
         } else {
             visit_title.setText("");
-            int requestCode = 0;
+            int requestCode = 1;
             Intent intent = new Intent(this, TrackingActivity.class);
             intent.putExtra("Title", title);
             TrackingActivity.secondsElapsed[0] = 0;
