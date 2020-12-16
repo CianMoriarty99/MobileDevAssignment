@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Gallery</string>
+    <string name="new_visit">New Visit</string>
+    <string name="title">Title</string>
+    <string name="title_placeholder">insert a title</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="fab_camera_desc">Snap a photo!</string>
+</resources>
